@@ -14,7 +14,7 @@ from ban_list import BAN_LIST
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.site_settings import get_site_settings
 from hashing import Hasher
-from helpers import (
+from helpers.menu_commands import (
     instructions_handler, lessons_handler, style_handler, format_handler, order_handler,
     authorization_handler, password_handler, site_payment_handler, support_handler,
     info_handler, my_bot_handler
