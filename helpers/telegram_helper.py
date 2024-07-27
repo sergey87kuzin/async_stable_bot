@@ -14,6 +14,11 @@ from ban_list import BAN_LIST
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.site_settings import get_site_settings
 from hashing import Hasher
+from helpers import (
+    instructions_handler, lessons_handler, style_handler, format_handler, order_handler,
+    authorization_handler, password_handler, site_payment_handler, support_handler,
+    info_handler, my_bot_handler
+)
 from models import UserCreate
 from settings import main_bot_token
 
@@ -48,7 +53,7 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
             token=main_bot_token,
     ) as bot:
         if site_settings.say_hi_video:
-            media_url = "https://ai-stocker.com/media/" + site_settings.say_hi_video
+            media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
             video = URLInputFile(media_url, filename=site_settings.say_hi_video)
             await bot.send_video_note(
                 chat_id=telegram_chat_id,
@@ -71,7 +76,50 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
 
 
 async def handle_command(telegram_chat_id: int, username: str, command: str, session: AsyncSession) -> None:
-    pass
+    if command == "/instruction":
+        await instructions_handler(telegram_chat_id)
+    elif command == "/lessons":
+        await lessons_handler(telegram_chat_id)
+    elif command == "/style":
+        await style_handler(telegram_chat_id)
+    elif command == "/format":
+        await format_handler(telegram_chat_id)
+    elif command in ["/tariff200", "/tariff1000"]:
+        await order_handler(
+            telegram_chat_id=telegram_chat_id,
+            order=command,
+            username=username,
+            session=session
+        )
+    elif command == "/authorization":
+        await authorization_handler(telegram_chat_id=telegram_chat_id)
+    elif command.startswith("/password"):
+        await password_handler(
+            telegram_chat_id=telegram_chat_id,
+            username=username,
+            password=command.replace("/password ", ""),
+            session=session
+        )
+    elif command == "/payment":
+        await site_payment_handler(telegram_chat_id=telegram_chat_id)
+    elif command == "/support":
+        await support_handler(telegram_chat_id=telegram_chat_id)
+    elif command == "/information":
+        await info_handler(telegram_chat_id=telegram_chat_id)
+    elif command == "/mybot":
+        await my_bot_handler(
+            telegram_chat_id=telegram_chat_id,
+            username=username,
+            session=session
+        )
+    else:
+        async with Bot(
+                token=main_bot_token,
+                default=DefaultBotProperties(
+                    parse_mode=ParseMode.HTML,
+                ),
+        ) as bot:
+            await bot.send_message(chat_id=telegram_chat_id, text="Бот не обучен этой команде((")
 
 
 async def handle_text_message(message: dict, session: AsyncSession):
