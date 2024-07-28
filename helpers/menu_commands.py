@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot_methods import bot_send_text_message, bot_send_two_text_messages, bot_send_text_message_with_markup
+from dals import UserDAL
 from dals.style_dal import StyleDAL
 from helpers.menu_texts import PRESET_INFO_TEXT, STYLE_INFO_TEXT, MENU_INFORMATION_TEXT, INFO_TEXT, PASSWORD_TEXT, \
     SUPPORT_TEXT, PAYMENT_TEXT
@@ -92,7 +93,27 @@ async def order_handler(telegram_chat_id: int, order: str, username: str, sessio
 
 
 async def my_bot_handler(telegram_chat_id: int, username: str, session: AsyncSession) -> None:
-    pass
+    user = await UserDAL(session).get_user_by_username(username)
+    if not user:
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="Ваш бот не найден. Пожалуйста, обратитесь в поддержку"
+        )
+        return
+    my_bot_text = f"""<pre>Доступ до: {user.get_bot_end}\n\nДоступные генерации: {user.all_messages}\n</pre>"""
+    extend_button = InlineKeyboardButton(
+        text="Продлить",
+        url=SITE_DOMAIN
+    )
+    my_bot_markup = InlineKeyboardMarkup(
+        resize_keyboard=True,
+        inline_keyboard=[[extend_button]]
+    )
+    await bot_send_text_message_with_markup(
+        telegram_chat_id=telegram_chat_id,
+        text=my_bot_text,
+        markup=my_bot_markup
+    )
 
 
 async def info_handler(telegram_chat_id: int) -> None:
