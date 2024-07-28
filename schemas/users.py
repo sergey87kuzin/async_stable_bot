@@ -58,3 +58,16 @@ class User(Base):
         back_populates='users',
         primaryjoin="CustomSettings.id == User.custom_settings_id"
     )
+
+    @property
+    def get_bot_end(self):
+        try:
+            return self.date_payment_expired.strftime("%d-%m-%Y %H:%M") or "Оплат пока не было(("
+        except Exception:
+            return "Оплат пока не было(("
+
+    @property
+    def all_messages(self):
+        if self.date_payment_expired and self.date_payment_expired.replace(tzinfo=None) > datetime.now():
+            return self.remain_messages + self.remain_paid_messages
+        return self.remain_messages
