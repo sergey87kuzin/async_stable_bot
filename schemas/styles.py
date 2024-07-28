@@ -19,7 +19,7 @@ class Style(Base):
     positive_prompt: Mapped[str_2048]
     negative_prompt: Mapped[Optional[str_2048]]
 
-    users: Mapped["User"] = relationship(
+    users: Mapped[Optional[list["User"]]] = relationship(
         back_populates="style",
         primaryjoin="Style.id == User.style_id"
     )

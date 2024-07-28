@@ -4,8 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message, bot_send_two_text_messages, bot_send_text_message_with_markup
 from dals import UserDAL
 from dals.style_dal import StyleDAL
+from handlers import _get_user_by_username
 from helpers.menu_texts import PRESET_INFO_TEXT, STYLE_INFO_TEXT, MENU_INFORMATION_TEXT, INFO_TEXT, PASSWORD_TEXT, \
     SUPPORT_TEXT, PAYMENT_TEXT
+from helpers.orders import create_order_from_menu
+from schemas import Order
 from settings import SITE_DOMAIN
 
 __all__ = (
@@ -89,7 +92,30 @@ async def style_handler(telegram_chat_id: int, session: AsyncSession) -> None:
 
 
 async def order_handler(telegram_chat_id: int, order: str, username: str, session: AsyncSession) -> None:
-    pass
+    user = await _get_user_by_username(username=username, session=session)
+    if not user:
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="Ваш бот не найден. Пожалуйста, обратитесь в поддержку"
+        )
+        return
+    payment_url = ""
+    if order == "/tariff200":
+        payment_url = await create_order_from_menu("day", user, session)
+    elif order == "/tariff1000":
+        payment_url = await create_order_from_menu("month", user, session)
+    if not payment_url:
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="Невозможно создать ссылку, обратитесь в техподдержку"
+        )
+        return
+    await bot_send_two_text_messages(
+        telegram_chat_id=telegram_chat_id,
+        text1="""<pre>Если у вас еще остались генерации, они сгорят при покупке новых.
+                 Не покупайте новые генерации, пока не израсходуете предыдущие</pre>""",
+        text2=f"<a href='{payment_url}'>Ссылка на оплату</a>"
+    )
 
 
 async def my_bot_handler(telegram_chat_id: int, username: str, session: AsyncSession) -> None:

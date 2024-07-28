@@ -59,6 +59,14 @@ class User(Base):
         primaryjoin="CustomSettings.id == User.custom_settings_id"
     )
 
+    orders: Mapped[Optional[list["Order"]]] = relationship(
+        back_populates="user",
+        primaryjoin="User.id == Order.user_id"
+    )
+
+    def __repr__(self) -> str:
+        return self.username
+
     @property
     def get_bot_end(self):
         try:
