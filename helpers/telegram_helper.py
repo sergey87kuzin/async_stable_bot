@@ -80,7 +80,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
     elif command == "/lessons":
         await lessons_handler(telegram_chat_id)
     elif command == "/style":
-        await style_handler(telegram_chat_id)
+        await style_handler(telegram_chat_id, session)
     elif command == "/format":
         await format_handler(telegram_chat_id)
     elif command in ["/tariff200", "/tariff1000"]:
