@@ -27,8 +27,10 @@ class Base(DeclarativeBase):
         str_64: String(64)
     }
 
-
+from .courses import *  # noqa
 from .custom_settings import *  # noqa
 from .messages import *  # noqa
+from .orders import *  # noqa
+from .prolongations import *  # noqa
 from .styles import *  # noqa
 from .users import *  # noqa
