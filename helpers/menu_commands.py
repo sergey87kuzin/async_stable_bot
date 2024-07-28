@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot_methods import bot_send_text_message, bot_send_two_text_messages, bot_send_text_message_with_markup
+from dals.style_dal import StyleDAL
 from helpers.menu_texts import PRESET_INFO_TEXT, STYLE_INFO_TEXT, MENU_INFORMATION_TEXT, INFO_TEXT, PASSWORD_TEXT, \
     SUPPORT_TEXT, PAYMENT_TEXT
 from settings import SITE_DOMAIN
@@ -23,11 +24,67 @@ __all__ = (
 
 
 async def format_handler(telegram_chat_id: int) -> None:
-    await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=PRESET_INFO_TEXT)
+    first_line_presets = (
+        ("3:2", " --ar 3:2"),
+        ("2:3", " --ar 2:3"),
+        ("16:9", " --ar 16:9"),
+        ("9:16", " --ar 9:16"),
+    )
+    second_line_presets = (
+        ("3:1", " --ar 3:1"),
+        ("Удалить", "preset&&del"),
+        ("Инфо", "preset&&info")
+    )
+    first_line_buttons = []
+    second_line_buttons = []
+    for preset in first_line_presets:
+        format_button = InlineKeyboardButton(
+            text=preset[0],
+            callback_data=f"preset&&{preset[1]}"
+        )
+        first_line_buttons.append(format_button)
+    for preset in second_line_presets:
+        format_button = InlineKeyboardButton(
+            text=preset[0],
+            callback_data=f"preset&&{preset[1]}"
+        )
+        second_line_buttons.append(format_button)
+    format_markup = InlineKeyboardMarkup(
+        resize_keyboard=True,
+        inline_keyboard=[first_line_buttons, second_line_buttons]
+    )
+    await bot_send_text_message_with_markup(
+        telegram_chat_id=telegram_chat_id,
+        text=PRESET_INFO_TEXT,
+        markup=format_markup
+    )
 
 
-async def style_handler(telegram_chat_id: int) -> None:
-    await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=STYLE_INFO_TEXT)
+async def style_handler(telegram_chat_id: int, session: AsyncSession) -> None:
+    styles = await StyleDAL(session).get_all_styles()
+    style_buttons = []
+    for style in styles:
+        style_buttons.append([InlineKeyboardButton(
+            text=style.name_for_menu,
+            callback_data=f"style&&{style.name}"
+        )])
+    style_buttons.append([InlineKeyboardButton(
+        text="Удалить",
+        callback_data=f"style&&del"
+    )])
+    style_buttons.append([InlineKeyboardButton(
+        text="Инфо ℹ️",
+        callback_data=f"style&&info"
+    )])
+    style_markup = InlineKeyboardMarkup(
+        resize_keyboard=True,
+        inline_keyboard=style_buttons
+    )
+    await bot_send_text_message_with_markup(
+        telegram_chat_id=telegram_chat_id,
+        text=STYLE_INFO_TEXT,
+        markup=style_markup
+    )
 
 
 async def order_handler(telegram_chat_id: int, order: str, username: str, session: AsyncSession) -> None:
