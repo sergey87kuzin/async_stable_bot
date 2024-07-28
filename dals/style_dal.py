@@ -8,7 +8,7 @@ from schemas import Style
 
 
 class StyleDAL:
-    """Data Access Layer for Users"""
+    """Data Access Layer for Style"""
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 

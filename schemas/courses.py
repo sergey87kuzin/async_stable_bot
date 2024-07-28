@@ -20,12 +20,3 @@ class Course(Base):
     duration: Mapped[int]
     is_active: Mapped[bool]
     description: Mapped[str_512]
-
-    orders: Mapped[Optional[list["Order"]]] = relationship(
-        back_populates="course",
-        primaryjoin="Course.id == Order.course_id"
-    )
-    prolongations: Mapped[Optional[list["Prolongation"]]] = relationship(
-        back_populates="course",
-        primaryjoin="Course.id == Prolongation.course_id"
-    )

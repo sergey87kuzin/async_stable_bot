@@ -20,7 +20,3 @@ class Prolongation(Base):
     course_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("courses_course.id", ondelete='SET NULL'),
     )
-    course: Mapped["Course"] = relationship(
-        back_populates='prolongations',
-        primaryjoin="Course.id == Prolongation.course_id"
-    )
