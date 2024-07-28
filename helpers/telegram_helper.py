@@ -1,4 +1,3 @@
-import os
 import random
 from datetime import datetime
 
@@ -17,7 +16,7 @@ from hashing import Hasher
 from helpers.menu_commands import (
     instructions_handler, lessons_handler, style_handler, format_handler, order_handler,
     authorization_handler, password_handler, site_payment_handler, support_handler,
-    info_handler, my_bot_handler
+    info_handler, my_bot_handler, help_handler
 )
 from models import UserCreate
 from settings import main_bot_token
@@ -112,6 +111,8 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
             username=username,
             session=session
         )
+    elif command == "/help":
+        await help_handler(telegram_chat_id=telegram_chat_id)
     else:
         async with Bot(
                 token=main_bot_token,
@@ -125,10 +126,10 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
 async def handle_text_message(message: dict, session: AsyncSession):
     chat = message.get("chat")
     if not chat:
-        return ""
+        return
     telegram_chat_id = chat.get("id")
     if telegram_chat_id in BAN_LIST:
-        return ""
+        return
     username = chat.get("username")
     if not username:
         async with Bot(
@@ -138,7 +139,7 @@ async def handle_text_message(message: dict, session: AsyncSession):
                 ),
         ) as bot:
             await bot.send_message(chat_id=telegram_chat_id, text="У вашего аккаунта нет username")
-        return ""
+        return
     initial_text = message.get("text")
     if not initial_text:
         async with Bot(
@@ -148,12 +149,13 @@ async def handle_text_message(message: dict, session: AsyncSession):
                 ),
         ) as bot:
             await bot.send_message(chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
-        return ""
+        return
     if initial_text == "/start":
         await handle_start_message(telegram_chat_id, username, session)
-        return ""
+        return
     elif initial_text.startswith("/"):
         await handle_command(telegram_chat_id, username, initial_text, session)
+        return
     user = await _get_user_by_username(username, session)
     if not user:
         async with Bot(
