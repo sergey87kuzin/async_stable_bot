@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Union
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,13 +54,10 @@ async def _delete_user(user_id: int, session: AsyncSession) -> DeleteUser:
         return DeleteUser(id=deleted_user_id)
 
 
-async def _update_user(user_id: int, update_data: dict, session: AsyncSession) -> DeleteUser:
+async def _update_user(user_id: int, update_data: dict, session: AsyncSession) -> Union[DeleteUser | None]:
     async with session.begin():
         user_dal = UserDAL(session)
         updated_user_id = await user_dal.update_user(user_id, update_data)
         if not updated_user_id:
-            raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND,
-                detail="Не удалось изменить данные пользователя"
-            )
+            return None
         return DeleteUser(id=updated_user_id)
