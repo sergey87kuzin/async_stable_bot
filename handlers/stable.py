@@ -2,7 +2,7 @@ import json
 from random import randint
 from typing import Union
 
-import aiohttp
+from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from async_requests import post

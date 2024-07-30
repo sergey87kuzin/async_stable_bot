@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,9 +11,13 @@ telegram_router = APIRouter()
 
 
 @telegram_router.post('/')
-async def handle_telegram_message(message: dict, session: AsyncSession = Depends(get_db)):
+async def handle_telegram_message(
+        message: dict,
+        background_tasks: BackgroundTasks,
+        session: AsyncSession = Depends(get_db)
+):
     if "text" in message:
-        await handle_text_message(message, session)
+        await handle_text_message(message, session, background_tasks)
     elif "callback_query" in message:
         await handle_button_message(message.get("callback_query"), session)
     return Response(status_code=HTTPStatus.OK)
