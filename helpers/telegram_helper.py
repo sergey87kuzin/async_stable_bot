@@ -6,6 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile, URLInputFile
 from deep_translator import GoogleTranslator
+from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
@@ -120,7 +121,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
 
 
-async def handle_text_message(message: dict, session: AsyncSession):
+async def handle_text_message(message: dict, session: AsyncSession, background_tasks: BackgroundTasks):
     chat = message.get("chat")
     if not chat:
         return
@@ -193,7 +194,7 @@ async def handle_text_message(message: dict, session: AsyncSession):
         "user_id": user.id,
     }, session)
     await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=answer_text)
-    await send_message_to_stable(message, user, session)
+    background_tasks.add_task(send_message_to_stable, message, user, session)
 
 
 async def handle_button_message(message: dict, session: AsyncSession):
