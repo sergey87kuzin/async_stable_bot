@@ -32,6 +32,7 @@ class GetUserForMessageHandler(TunedModel):
     remain_messages: int
     remain_paid_messages: int
     date_payment_expired: Optional[datetime]
+    preset: Optional[str]
 
 
 class DeleteUser(TunedModel):

@@ -9,7 +9,6 @@ from hashing import Hasher
 from helpers.menu_texts import PRESET_INFO_TEXT, STYLE_INFO_TEXT, MENU_INFORMATION_TEXT, INFO_TEXT, PASSWORD_TEXT, \
     SUPPORT_TEXT, PAYMENT_TEXT
 from helpers.orders import create_order_from_menu
-from schemas import Order
 from settings import SITE_DOMAIN
 
 __all__ = (
@@ -120,7 +119,9 @@ async def order_handler(telegram_chat_id: int, order: str, username: str, sessio
 
 
 async def my_bot_handler(telegram_chat_id: int, username: str, session: AsyncSession) -> None:
-    user = await UserDAL(session).get_user_by_username(username)
+    async with session.begin():
+        user_dal = UserDAL(session)
+        user = await user_dal.get_user_by_username(username=username)
     if not user:
         await bot_send_text_message(
             telegram_chat_id=telegram_chat_id,

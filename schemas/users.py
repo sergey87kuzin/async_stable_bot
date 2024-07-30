@@ -63,6 +63,10 @@ class User(Base):
         back_populates="user",
         primaryjoin="User.id == Order.user_id"
     )
+    stable_messages: Mapped[Optional[list["StableMessage"]]] = relationship(
+        back_populates="user",
+        primaryjoin="User.id == StableMessage.user_id"
+    )
 
     def __repr__(self) -> str:
         return self.username
