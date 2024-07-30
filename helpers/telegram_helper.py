@@ -10,7 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
 from ban_list import BAN_LIST
+from bot_methods import bot_send_text_message
+from denied_words import check_words
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
+from handlers.stable import send_message_to_stable
 from handlers.site_settings import get_site_settings
 from hashing import Hasher
 from helpers.menu_commands import (
@@ -114,13 +117,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
     elif command == "/help":
         await help_handler(telegram_chat_id=telegram_chat_id)
     else:
-        async with Bot(
-                token=main_bot_token,
-                default=DefaultBotProperties(
-                    parse_mode=ParseMode.HTML,
-                ),
-        ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="Бот не обучен этой команде((")
+        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
 
 
 async def handle_text_message(message: dict, session: AsyncSession):
@@ -132,23 +129,11 @@ async def handle_text_message(message: dict, session: AsyncSession):
         return
     username = chat.get("username")
     if not username:
-        async with Bot(
-                token=main_bot_token,
-                default=DefaultBotProperties(
-                    parse_mode=ParseMode.HTML,
-                ),
-        ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="У вашего аккаунта нет username")
+        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="У вашего аккаунта нет username")
         return
     initial_text = message.get("text")
     if not initial_text:
-        async with Bot(
-                token=main_bot_token,
-                default=DefaultBotProperties(
-                    parse_mode=ParseMode.HTML,
-                ),
-        ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
+        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
         return
     if initial_text == "/start":
         await handle_start_message(telegram_chat_id, username, session)
@@ -158,36 +143,57 @@ async def handle_text_message(message: dict, session: AsyncSession):
         return
     user = await _get_user_by_username(username, session)
     if not user:
-        async with Bot(
-                token=main_bot_token,
-                default=DefaultBotProperties(
-                    parse_mode=ParseMode.HTML,
-                ),
-        ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="Пожалуйста, нажмите кнопку start в боте")
+        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Пожалуйста, нажмите кнопку start в боте")
         return ""
     translator = GoogleTranslator(source='auto', target='en')
     answer_text = "Творим волшебство"
     if user.remain_messages > 0:
         remain_messages = user.remain_messages - 1
-        await _update_user(user.id, {"remain_messages": remain_messages}, session)
+        user_id = await _update_user(user.id, {"remain_messages": remain_messages}, session)
     elif user.remain_messages > 0 and user.date_payment_expired >= datetime.now():
         remain_paid_messages = user.remain_paid_messages - 1
-        await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
+        user_id = await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
     else:
-        async with Bot(
-                token=main_bot_token,
-                default=DefaultBotProperties(
-                    parse_mode=ParseMode.HTML,
-                ),
-        ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="Не осталось генераций")
-    await _create_message({
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="Не осталось генераций"
+        )
+        return
+    if not user_id:
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="Бот косячит( пожалуйста, попробуйте снова"
+        )
+    # if SetVideoVariables.objects.filter(username=chat_username, is_set=False).exists():
+    #     set_video_message_variables(chat_username, message_text, chat_id)
+    #     return "", "", "", ""
+    eng_text = translator.translate(initial_text)
+    if not eng_text:
+        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
+        return
+    wrong_words = check_words(eng_text)
+    if wrong_words:
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text=f"❌Вы отправили запрещенные слова: {wrong_words}"
+        )
+        return
+    eng_text = eng_text.replace("-- ", "--").replace("blonde girl", "girl, blonde hair")
+    if user.preset and user.preset not in initial_text and user.preset not in eng_text:
+        initial_text = initial_text + user.preset
+        eng_text = eng_text + user.preset
+    # photos = message.get("photo")
+    # if photos:
+    #     handle_image_message.delay(eng_text, chat_id, photos, chat_username, user.id)
+    #     return "", "", "", ""
+    message = await _create_message({
         "initial_text": initial_text,
-        "eng_text": initial_text,
+        "eng_text": eng_text,
         "telegram_chat_id": str(telegram_chat_id),
         "user_id": user.id,
     }, session)
+    await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=answer_text)
+    await send_message_to_stable(message, user, session)
 
 
 async def handle_button_message(message: dict, session: AsyncSession):

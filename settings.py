@@ -18,6 +18,7 @@ support_telegram_token = os.getenv("SUPPORT_TELEGRAM_TOKEN")
 comment_telegram_token = os.getenv("COMMENT_TELEGRAM_TOKEN")
 SITE_DOMAIN = os.getenv("SITE_DOMAIN")
 PAYMENT_URL = os.getenv("PAYMENT_URL")
+STABLE_API_KEY = os.getenv("STABLE_API_KEY")
 
 # ACCESS_TOKEN_EXPIRE_MINUTES = env.int("ACCESS_TOKEN_EXPIRE_MINUTES", default=60)
 # SECRET_KEY = env.str("SECRET_KEY", default="secret")

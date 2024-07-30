@@ -2,7 +2,6 @@ from typing import Optional
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy_file import File, FileField
 
 from schemas import Base, str_512, str_1024
 

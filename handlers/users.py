@@ -5,7 +5,6 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dals import UserDAL
-from hashing import Hasher
 from models import UserCreate, ShowUser, DeleteUser, GetUserForMessageHandler
 
 __all__ = (
@@ -39,6 +38,7 @@ async def _get_user_by_username(username: str, session: AsyncSession) -> GetUser
             remain_messages=user.remain_messages,
             remain_paid_messages=user.remain_paid_messages,
             date_payment_expired=user.date_payment_expired,
+            preset=user.preset,
         )
 
 

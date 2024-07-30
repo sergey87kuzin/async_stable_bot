@@ -4,12 +4,13 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dals import StableMessageDAL
-from models import ShowMessage
 
 __all__ = (
     "_update_message",
     "_create_message"
 )
+
+from schemas import StableMessage
 
 
 async def _update_message(message_id: int, update_data: dict, session: AsyncSession) -> None:
@@ -23,8 +24,9 @@ async def _update_message(message_id: int, update_data: dict, session: AsyncSess
             )
 
 
-async def _create_message(message_data: dict, session: AsyncSession) -> ShowMessage:
-    async with session.begin():
-        message_dal = StableMessageDAL(session)
-        message = await message_dal.create_message(message_data)
-        return ShowMessage(id=message.id)
+async def _create_message(message_data: dict, session: AsyncSession) -> StableMessage:
+    # async with session.begin():
+    message_dal = StableMessageDAL(session)
+    message = await message_dal.create_message(message_data)
+    await session.commit()
+    return message

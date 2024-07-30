@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from global_constants import StableMessageTypeChoices
-from schemas.common import str_2048, str_128, str_512, str_1024, Base, str_8, str_16
+from . import str_2048, str_128, str_512, str_1024, Base, str_8, str_16
 from schemas.custom_columns import intpk, created_at
 
 __all__ = (
@@ -22,7 +22,10 @@ class StableMessage(Base):
     user_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("users_user.id", ondelete='CASCADE'),
     )
-    user = relationship("users_user", backref='stable_messages')
+    user: Mapped["User"] = relationship(
+        back_populates='stable_messages',
+        primaryjoin="User.id == StableMessage.user_id"
+    )
     stable_request_id: Mapped[Optional[str_512]]
     single_image: Mapped[Optional[str_1024]]
     first_image: Mapped[Optional[str_1024]]
