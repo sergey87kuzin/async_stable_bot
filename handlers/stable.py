@@ -53,8 +53,10 @@ async def send_message_to_stable(message: StableMessage, user: GetUserForMessage
     user_id = message.user_id
     eng_text = message.eng_text
 
-    custom_settings = await get_user_custom_settings(user_id, session)
-    style = await get_user_style(user_id, session)
+    # custom_settings = await get_user_custom_settings(user_id, session)
+    custom_settings = user.custom_settings
+    # style = await get_user_style(user_id, session)
+    style = user.style
     model_id = stable_settings.model_id or "juggernaut-xl"
     num_inference_steps = stable_settings.num_inference_steps or "31"
     guidance_scale = stable_settings.guidance_scale or 7

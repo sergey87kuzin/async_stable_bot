@@ -2,6 +2,7 @@ from typing import Union
 
 from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from models import UserCreate
 from schemas import User
@@ -28,6 +29,18 @@ class UserDAL:
 
     async def get_user_by_username(self, username: str) -> Union[User, None]:
         query = select(User).where(User.username == username)
+        result = await self.db_session.execute(query)
+        user_row = result.fetchone()
+        if user_row:
+            return user_row[0]
+
+    async def get_user_with_style_and_custom_settings(self, username):
+        query = (
+            select(User)
+            .where(User.username == username)
+            .options(joinedload(User.style))
+            .options(joinedload(User.custom_settings))
+        )
         result = await self.db_session.execute(query)
         user_row = result.fetchone()
         if user_row:

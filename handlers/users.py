@@ -61,3 +61,12 @@ async def _update_user(user_id: int, update_data: dict, session: AsyncSession) -
         if not updated_user_id:
             return None
         return DeleteUser(id=updated_user_id)
+
+
+async def _get_user_with_style_and_custom_settings(username: str, session: AsyncSession):
+    async with session.begin():
+        user_dal = UserDAL(session)
+        user = await user_dal.get_user_with_style_and_custom_settings(username=username)
+        if not user:
+            return None
+        return user
