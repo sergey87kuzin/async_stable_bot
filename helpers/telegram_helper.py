@@ -16,6 +16,7 @@ from denied_words import check_words
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.stable import send_message_to_stable
 from handlers.site_settings import get_site_settings
+from handlers.users import _get_user_with_style_and_custom_settings
 from hashing import Hasher
 from helpers.menu_commands import (
     instructions_handler, lessons_handler, style_handler, format_handler, order_handler,
@@ -142,7 +143,7 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     elif initial_text.startswith("/"):
         await handle_command(telegram_chat_id, username, initial_text, session)
         return
-    user = await _get_user_by_username(username, session)
+    user = await _get_user_with_style_and_custom_settings(username, session)
     if not user:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Пожалуйста, нажмите кнопку start в боте")
         return ""
