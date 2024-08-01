@@ -2,6 +2,7 @@ from typing import Union
 
 from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from schemas import StableMessage
 
@@ -32,3 +33,14 @@ class StableMessageDAL:
         updated_message_row = result.fetchone()
         if updated_message_row:
             return updated_message_row[0]
+
+    async def get_message_by_id(self, message_id: int) -> Union[StableMessage, None]:
+        query = (
+            select(StableMessage)
+            .where(StableMessage.id == message_id)
+            .options(joinedload(StableMessage.user))
+        )
+        result = await self.db_session.execute(query)
+        message_row = result.fetchone()
+        if message_row:
+            return message_row[0]

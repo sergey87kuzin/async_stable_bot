@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
@@ -11,10 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
 from ban_list import BAN_LIST
-from bot_methods import bot_send_text_message
+from bot_methods import bot_send_text_message, bot_edit_reply_markup, bot_send_text_message_with_markup
 from denied_words import check_words
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
-from handlers.stable import send_message_to_stable
+from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
 from handlers.site_settings import get_site_settings
 from handlers.users import _get_user_with_style_and_custom_settings
 from hashing import Hasher
@@ -23,6 +23,7 @@ from helpers.menu_commands import (
     authorization_handler, password_handler, site_payment_handler, support_handler,
     info_handler, my_bot_handler, help_handler
 )
+from helpers.stable import check_remains
 from models import UserCreate
 from settings import main_bot_token
 
@@ -152,7 +153,7 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     if user.remain_messages > 0:
         remain_messages = user.remain_messages - 1
         user_id = await _update_user(user.id, {"remain_messages": remain_messages}, session)
-    elif user.remain_messages > 0 and user.date_payment_expired >= datetime.now():
+    elif user.remain_messages > 0 and user.date_payment_expired.replace(tzinfo=None) >= datetime.now():
         remain_paid_messages = user.remain_paid_messages - 1
         user_id = await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
     else:
@@ -198,5 +199,100 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     background_tasks.add_task(send_message_to_stable, message, user, session)
 
 
-async def handle_button_message(message: dict, session: AsyncSession):
-    pass
+async def handle_button_message(button_data: dict, session: AsyncSession, background_tasks: BackgroundTasks):
+    if button_data:
+        chat_id = button_data.get("from", {}).get("id")
+        if chat_id in BAN_LIST:
+            return
+        message_text = button_data.get("data")
+        # if StableMessage.objects.filter(
+        #         eng_text=message_text,
+        #         created_at__gt=datetime.now() - timedelta(minutes=1)
+        # ).exists():
+        #     await bot_send_text_message(telegram_chat_id=chat_id, text="Вы уже нажимали на эту кнопку)")
+        #     return
+        chat_username = button_data.get("from", {}).get("username")
+        # if message_text.startswith("preset&&"):
+        #     await set_preset_handler(chat_id, chat_username, message_text)
+        #     return
+        # if message_text.startswith("style&&"):
+        #     await set_style_handler(chat_id, chat_username, message_text)
+        #     return
+        # Пр нажатии на кнопку заменяем ее на символ нажатия
+        reply_markup = button_data.get("message").get("reply_markup")
+        buttons = [[]]
+        for line in reply_markup.get("inline_keyboard"):
+            line_buttons = []
+            for button in line:
+                if button.get("callback_data") == button_data.get("data"):
+                    item = InlineKeyboardButton(
+                        text="✅",
+                        callback_data=button.get("callback_data")
+                    )
+                else:
+                    item = InlineKeyboardButton(
+                        text=button.get("text"),
+                        callback_data=button.get("callback_data")
+                    )
+                line_buttons.append(item)
+            buttons.append(line_buttons)
+        buttons_markup = InlineKeyboardMarkup(
+            resize_keyboard=True,
+            inline_keyboard=buttons
+        )
+        try:
+            await bot_send_text_message_with_markup(
+                markup=buttons_markup,
+                telegram_chat_id=chat_id,
+                text="Testing markup change"
+            )
+            # await bot_edit_reply_markup(
+            #     message_id=button_data.get("message").get("message_id"),
+            #     markup=buttons_markup,
+            #     telegram_chat_id=chat_id
+            # )
+        except Exception:
+            pass
+        if not message_text or not chat_username or not chat_id:
+            await bot_send_text_message(telegram_chat_id=chat_id, text="С этой кнопкой что-то не так")
+            return
+        eng_text = message_text
+        user = await _get_user_with_style_and_custom_settings(chat_username, session)
+        if not user:
+            await bot_send_text_message(telegram_chat_id=chat_id, text="Вы не зарегистрированы в приложении")
+            return
+        if message_text.startswith("button_visualize&&"):
+            if user.remain_video_messages <= 0:
+                await bot_send_text_message(
+                    telegram_chat_id=chat_id,
+                    text="У вас закончились видео генерации"
+                )
+                return
+            # handle_visualize_button(message_text, user, chat_id)
+            return
+        else:
+            if not await check_remains(eng_text, user, chat_id, session):
+                return
+        # if message_text.startswith("button_upscale"):
+        #     handle_upscale_button(message_text, chat_id)
+        #     return
+        # elif message_text.startswith("button_zoom&&"):
+        #     handle_zoom_button(message_text, chat_id, "back")
+        #     return
+        # elif message_text.startswith("button_move"):
+        #     direction = message_text.split("&&")[1]
+        #     handle_zoom_button(message_text, chat_id, direction)
+        #     return
+        if message_text.startswith("button_vary"):
+            await handle_vary_button(message_text, chat_id, session, background_tasks)
+            return
+        elif message_text.startswith("button_send_again&&"):
+            await handle_repeat_button(message_text, chat_id, session, background_tasks)
+            return
+    else:
+        # user = User.objects.first()
+        # stable_bot.send_message(
+        #     chat_id=user.chat_id,
+        #     text="Кто-то опять косячит :)",
+        # )
+        return
