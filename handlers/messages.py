@@ -8,7 +8,8 @@ from dals import StableMessageDAL
 __all__ = (
     "_update_message",
     "_create_message",
-    "get_message_by_id"
+    "get_message_by_id",
+    "get_message_by_stable_request_id"
 )
 
 from schemas import StableMessage
@@ -36,4 +37,10 @@ async def _create_message(message_data: dict, session: AsyncSession) -> StableMe
 async def get_message_by_id(message_id: int, session: AsyncSession) -> StableMessage:
     message_dal = StableMessageDAL(session)
     message = await message_dal.get_message_by_id(message_id)
+    return message
+
+
+async def get_message_by_stable_request_id(stable_request_id: str, session: AsyncSession) -> StableMessage:
+    message_dal = StableMessageDAL(session)
+    message = await message_dal.get_message_by_stable_request_id(stable_request_id)
     return message

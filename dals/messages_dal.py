@@ -44,3 +44,14 @@ class StableMessageDAL:
         message_row = result.fetchone()
         if message_row:
             return message_row[0]
+
+    async def get_message_by_stable_request_id(self, stable_request_id: str) -> Union[StableMessage, None]:
+        query = (
+            select(StableMessage)
+            .where(StableMessage.stable_request_id == stable_request_id)
+            .options(joinedload(StableMessage.user))
+        )
+        result = await self.db_session.execute(query)
+        message_row = result.fetchone()
+        if message_row:
+            return message_row[0]
