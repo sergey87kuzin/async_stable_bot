@@ -45,3 +45,23 @@ async def bot_edit_reply_markup(telegram_chat_id: int, message_id: int, markup: 
             )
     ) as bot:
         await bot.edit_message_reply_markup(chat_id=telegram_chat_id, message_id=message_id, reply_markup=markup)
+
+
+async def bot_send_image(
+        telegram_chat_id: str,
+        image_url: str,
+        caption: str,
+        markup: InlineKeyboardMarkup
+) -> None:
+    async with Bot(
+            token=main_bot_token,
+            default=DefaultBotProperties(
+                parse_mode=ParseMode.HTML,
+            )
+    ) as bot:
+        await bot.send_photo(
+            chat_id=telegram_chat_id,
+            photo=image_url,
+            caption=caption,
+            reply_markup=markup
+        )

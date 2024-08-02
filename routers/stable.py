@@ -7,11 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message
 from database_interaction import get_db
 from handlers import get_message_by_id, _update_message, get_message_by_stable_request_id, _update_user
+from handlers.telegram import send_images_to_telegram
 
 stable_router = APIRouter()
 
 
-@stable_router.post("/")
+@stable_router.post("/first_callback/")
 async def stable_image_webhook(
         data: dict,
         background_tasks: BackgroundTasks,
@@ -21,8 +22,6 @@ async def stable_image_webhook(
     images = data.get("output")
     message_id = data.get("track_id")
     if images and data.get("status") == "success":
-        message = await get_message_by_id(message_id, session)
-        user = message.user
         # if user.is_test_user and message.message_type == StableMessageTypeChoices.DOUBLE:
         #     message.first_image = images[0]
         #     message.message_type = StableMessageTypeChoices.FIRST
