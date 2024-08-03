@@ -1,9 +1,11 @@
+from datetime import timedelta, datetime
 from typing import Union
 
 from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from global_constants import StableMessageTypeChoices
 from schemas import StableMessage
 
 __all__ = (
@@ -55,3 +57,22 @@ class StableMessageDAL:
         message_row = result.fetchone()
         if message_row:
             return message_row[0]
+
+    async def get_not_sent_to_stable_messages(self) -> list[StableMessage | None]:
+        query = (
+            select(StableMessage)
+            .where(and_(
+                StableMessage.stable_request_id == None,
+                StableMessage.sent_to_stable == False,
+                StableMessage.answer_sent == False,
+                StableMessage.message_type == StableMessageTypeChoices.FIRST,
+                StableMessage.created_at < datetime.now() - timedelta(hours=1)
+            ))
+            .options(joinedload(StableMessage.user))
+        )
+        result = await self.db_session.execute(query)
+        messages = result.fetchall()
+        result = []
+        for message in messages:
+            result.append(message.StableMessage)
+        return result

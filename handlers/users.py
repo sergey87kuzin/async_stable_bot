@@ -11,7 +11,8 @@ __all__ = (
     "_create_new_user",
     "_delete_user",
     "_update_user",
-    "_get_user_by_username"
+    "_get_user_by_username",
+    "_get_user_with_style_and_custom_settings"
 )
 
 from schemas import User

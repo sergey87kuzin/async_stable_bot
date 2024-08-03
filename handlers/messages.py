@@ -9,7 +9,8 @@ __all__ = (
     "_update_message",
     "_create_message",
     "get_message_by_id",
-    "get_message_by_stable_request_id"
+    "get_message_by_stable_request_id",
+    "get_not_sent_to_stable_messages"
 )
 
 from schemas import StableMessage
@@ -44,3 +45,9 @@ async def get_message_by_stable_request_id(stable_request_id: str, session: Asyn
     message_dal = StableMessageDAL(session)
     message = await message_dal.get_message_by_stable_request_id(stable_request_id)
     return message
+
+
+async def get_not_sent_to_stable_messages(session: AsyncSession) -> list[StableMessage | None]:
+    message_dal = StableMessageDAL(session)
+    messages = await message_dal.get_not_sent_to_stable_messages()
+    return messages

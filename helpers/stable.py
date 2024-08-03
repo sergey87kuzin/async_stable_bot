@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message
 from global_constants import SCALES
 from handlers import _update_message, _update_user
-from models import GetUserForMessageHandler
 from schemas import StableMessage, User, StableSettings
 from settings import STABLE_API_KEY, SITE_DOMAIN
 
@@ -15,6 +14,7 @@ from settings import STABLE_API_KEY, SITE_DOMAIN
 __all__ = (
     "get_stable_data",
     "handle_stable_text2img_answer",
+    "check_remains"
 )
 
 
