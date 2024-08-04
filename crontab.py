@@ -21,6 +21,7 @@ async def startup(ctx):
 
 
 async def shutdown(ctx):
+    await ctx["session"].close()
     await ctx['db_session'].close()
 
 
@@ -28,7 +29,9 @@ async def main():
     hours = set()
     for hour in range(6, 24):
         hours.add(hour)
+    redis_pool = await create_pool(RedisSettings())
     worker = Worker(
+        # указываем фоновые задачи
         cron_jobs=[
             cron(
                 f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
@@ -36,28 +39,40 @@ async def main():
                 minute=10
             )
         ],
-        redis_settings=RedisSettings(),
-        keep_result=0,
         on_startup=startup,
         on_shutdown=shutdown,
+        max_jobs=100,
+        health_check_interval=60,
+        handle_signals=False,
+        redis_pool=redis_pool,
     )
-    await worker.async_run()
+    try:
+        # запускаем воркер
+        await worker.main()
+    finally:
+        # закрываем воркер
+        await worker.close()
+    # redis = await create_pool(RedisSettings())
+    # await redis.enqueue_job(
+    #     check_not_sent_messages.__name__,
+    #     _defer_by=timedelta(minutes=1),
+    # )
 
 
-# class WorkerSettings:
-#     hours = set()
-#     for hour in range(6, 24):
-#         hours.add(hour)
-#     functions = [check_not_sent_messages]
-#     cron_jobs = [
-#         cron(
-#             f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
-#             hour=hours,
-#             minute=10
-#         )
-#     ]
-#     on_startup = startup
-#     on_shutdown = shutdown
+class WorkerSettings:
+    hours = set()
+    for hour in range(6, 24):
+        hours.add(hour)
+    functions = [check_not_sent_messages]
+    cron_jobs = [
+        cron(
+            f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
+            hour=hours,
+            minute=10
+        )
+    ]
+    on_startup = startup
+    on_shutdown = shutdown
 
 
 if __name__ == "__main__":
