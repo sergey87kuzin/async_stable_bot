@@ -9,6 +9,5 @@ __all__ = (
 
 
 async def get_stable_settings(async_session: AsyncSession) -> StableSettings:
-    async with async_session.begin():
-        result = await async_session.execute(select(StableSettings))
-        return result.fetchone()[0]
+    result = await async_session.execute(select(StableSettings))
+    return result.fetchone()[0]

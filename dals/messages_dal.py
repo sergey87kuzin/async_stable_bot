@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from global_constants import StableMessageTypeChoices
-from schemas import StableMessage
+from schemas import StableMessage, User
 
 __all__ = (
     "StableMessageDAL",
@@ -68,7 +68,11 @@ class StableMessageDAL:
                 StableMessage.message_type == StableMessageTypeChoices.FIRST,
                 StableMessage.created_at < datetime.now() - timedelta(hours=1)
             ))
-            .options(joinedload(StableMessage.user))
+            .options(
+                joinedload(StableMessage.user)
+                .options(joinedload(User.custom_settings))
+                .options(joinedload(User.style))
+            )
         )
         result = await self.db_session.execute(query)
         messages = result.fetchall()
