@@ -2,7 +2,7 @@ import asyncio
 from datetime import timedelta
 
 from aiohttp import ClientSession
-from arq import create_pool, cron
+from arq import create_pool, cron, Worker
 from arq.connections import RedisSettings
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -25,27 +25,39 @@ async def shutdown(ctx):
 
 
 async def main():
-    redis = await create_pool(RedisSettings())
-    await redis.enqueue_job(
-        check_not_sent_messages.__name__,
-        _defer_by=timedelta(minutes=1),
-    )
-
-
-class WorkerSettings:
     hours = set()
     for hour in range(6, 24):
         hours.add(hour)
-    functions = [check_not_sent_messages]
-    cron_jobs = [
-        cron(
-            f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
-            hour=hours,
-            minute=10
-        )
-    ]
-    on_startup = startup
-    on_shutdown = shutdown
+    worker = Worker(
+        cron_jobs=[
+            cron(
+                f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
+                hour=hours,
+                minute=10
+            )
+        ],
+        redis_settings=RedisSettings(),
+        keep_result=0,
+        on_startup=startup,
+        on_shutdown=shutdown,
+    )
+    await worker.async_run()
+
+
+# class WorkerSettings:
+#     hours = set()
+#     for hour in range(6, 24):
+#         hours.add(hour)
+#     functions = [check_not_sent_messages]
+#     cron_jobs = [
+#         cron(
+#             f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
+#             hour=hours,
+#             minute=10
+#         )
+#     ]
+#     on_startup = startup
+#     on_shutdown = shutdown
 
 
 if __name__ == "__main__":
