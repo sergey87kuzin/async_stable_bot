@@ -30,19 +30,19 @@ async def _create_new_user(body: UserCreate, session: AsyncSession) -> ShowUser:
 
 
 async def _get_user_by_username(username: str, session: AsyncSession) -> GetUserForMessageHandler | None:
-    async with session.begin():
-        user_dal = UserDAL(session)
-        user = await user_dal.get_user_by_username(username=username)
-        if not user:
-            return None
-        return GetUserForMessageHandler(
-            id=user.id,
-            username=user.username,
-            remain_messages=user.remain_messages,
-            remain_paid_messages=user.remain_paid_messages,
-            date_payment_expired=user.date_payment_expired,
-            preset=user.preset,
-        )
+    # async with session.begin():
+    user_dal = UserDAL(session)
+    user = await user_dal.get_user_by_username(username=username)
+    if not user:
+        return None
+    return GetUserForMessageHandler(
+        id=user.id,
+        username=user.username,
+        remain_messages=user.remain_messages,
+        remain_paid_messages=user.remain_paid_messages,
+        date_payment_expired=user.date_payment_expired,
+        preset=user.preset,
+    )
 
 
 async def _delete_user(user_id: int, session: AsyncSession) -> DeleteUser:
