@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Union
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,20 +11,20 @@ __all__ = (
     "_create_message",
     "get_message_by_id",
     "get_message_by_stable_request_id",
-    "get_not_sent_to_stable_messages"
+    "get_not_sent_to_stable_messages",
+    "get_no_answer_messages",
+    "get_not_sent_to_telegram_messages"
 )
 
 from schemas import StableMessage
 
 
-async def _update_message(message_id: int, update_data: dict, session: AsyncSession) -> None:
+async def _update_message(message_id: int, update_data: dict, session: AsyncSession) -> Union[StableMessage | None]:
     message_dal = StableMessageDAL(session)
     updated_message = await message_dal.update_message(message_id, update_data)
     if not updated_message:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="Не удалось изменить данные сообщения"
-        )
+        return None
+    return updated_message
 
 
 async def _create_message(message_data: dict, session: AsyncSession) -> StableMessage:
@@ -49,4 +50,16 @@ async def get_message_by_stable_request_id(stable_request_id: str, session: Asyn
 async def get_not_sent_to_stable_messages(session: AsyncSession) -> list[StableMessage | None]:
     message_dal = StableMessageDAL(session)
     messages = await message_dal.get_not_sent_to_stable_messages()
+    return messages
+
+
+async def get_no_answer_messages(session: AsyncSession) -> list[StableMessage | None]:
+    message_dal = StableMessageDAL(session)
+    messages = await message_dal.get_no_answer_messages()
+    return messages
+
+
+async def get_not_sent_to_telegram_messages(session: AsyncSession) -> list[StableMessage | None]:
+    message_dal = StableMessageDAL(session)
+    messages = await message_dal.get_not_sent_to_telegram_messages()
     return messages

@@ -14,7 +14,8 @@ from settings import STABLE_API_KEY, SITE_DOMAIN
 __all__ = (
     "get_stable_data",
     "handle_stable_text2img_answer",
-    "check_remains"
+    "check_remains",
+    "handle_stable_fetch_answer"
 )
 
 
@@ -156,6 +157,32 @@ async def handle_stable_text2img_answer(
         )
     message_data["sent_to_stable"] = True
     await _update_message(message.id, update_data=message_data, session=session)
+
+
+async def handle_stable_fetch_answer(
+        response_data: dict,
+        message: StableMessage,
+        remain_messages: int,
+        session: AsyncSession,
+) -> Union[StableMessage | None]:
+    status = response_data.get("status")
+    if status == "success":
+        images = response_data.get("output")
+        message_data = {
+            "first_image": images[0],
+            "second_image": images[1],
+            "third_image": images[2],
+            "fourth_image": images[3],
+        }
+        return await _update_message(message.id, update_data=message_data, session=session)
+    elif status in ["failed", "error"]:
+        await _update_user(message.user_id, {"remain_messages": remain_messages}, session)
+        await _update_message(message.id, update_data={"answer_sent": True}, session=session)
+        await bot_send_text_message(
+            telegram_chat_id=message.telegram_chat_id,
+            text=f"Генерация по запросу '{message.initial_text}'"
+                 " не удалась. Вам добавлена одна генерация. Попробуйте снова"
+        )
 
 
 async def check_remains(

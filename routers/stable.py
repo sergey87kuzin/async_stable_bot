@@ -8,7 +8,6 @@ from bot_methods import bot_send_text_message
 from database_interaction import get_db
 from handlers import _update_message, get_message_by_stable_request_id, _update_user
 from handlers.telegram import send_images_to_telegram
-from periodic_tasks import check_not_sent_messages
 
 stable_router = APIRouter()
 
@@ -53,8 +52,3 @@ async def stable_image_webhook(
             user_data = {"remain_messages": user.remain_messages + 1}
             await _update_user(user.id, user_data, session)
     return Response(status_code=HTTPStatus.OK)
-
-
-@stable_router.post("/resent/")
-async def resend_not_sent_messages(session: AsyncSession = Depends(get_db)):
-    await check_not_sent_messages(session)
