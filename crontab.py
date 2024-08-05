@@ -8,7 +8,7 @@ from arq.connections import RedisSettings
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from periodic_tasks.stable import check_not_sent_messages
+from periodic_tasks import check_not_sent_messages, check_no_answer_message, check_not_sent_to_telegram
 import settings
 
 engine = create_async_engine(settings.REAL_DATABASE_URL, future=True, echo=True)
@@ -37,7 +37,17 @@ async def main():
                 f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
                 hour=hours,
                 minute=10
-            )
+            ),
+            cron(
+                f"periodic_tasks.stable.{check_no_answer_message.__name__}",
+                hour=hours,
+                minute=53
+            ),
+            cron(
+                f"periodic_tasks.telegram.{check_not_sent_to_telegram.__name__}",
+                hour=hours,
+                minute=16
+            ),
         ],
         on_startup=startup,
         on_shutdown=shutdown,
