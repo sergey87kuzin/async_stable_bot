@@ -12,6 +12,11 @@ REAL_DATABASE_URL = os.getenv(
     default="postgresql+asyncpg://sergey:11@localhost:5432/bot",
 )
 
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    default="postgresql+asyncpg://sergey:11@localhost:5432/bot_test",
+)
+
 main_bot_token = os.getenv("MAIN_TELEGRAM_TOKEN")
 payment_telegram_token = os.getenv("PAYMENT_TELEGRAM_TOKEN")
 support_telegram_token = os.getenv("SUPPORT_TELEGRAM_TOKEN")
