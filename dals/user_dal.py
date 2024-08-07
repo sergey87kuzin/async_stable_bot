@@ -25,6 +25,7 @@ class UserDAL:
         )
         self.db_session.add(new_user)
         await self.db_session.flush()
+        await self.db_session.commit()
         return new_user
 
     async def get_user_by_username(self, username: str) -> Union[User, None]:

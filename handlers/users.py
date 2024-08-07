@@ -19,14 +19,14 @@ from schemas import User
 
 
 async def _create_new_user(body: UserCreate, session: AsyncSession) -> ShowUser:
-    async with session.begin():
-        user_dal = UserDAL(session)
-        user = await user_dal.create_user(body)
-        return ShowUser(
-            id=user.id,
-            username=user.username,
-            is_active=user.is_active,
-        )
+    # async with session.begin():
+    user_dal = UserDAL(session)
+    user = await user_dal.create_user(body)
+    return ShowUser(
+        id=user.id,
+        username=user.username,
+        is_active=user.is_active,
+    )
 
 
 async def _get_user_by_username(username: str, session: AsyncSession) -> GetUserForMessageHandler | None:
