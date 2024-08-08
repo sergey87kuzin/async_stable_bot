@@ -5,13 +5,14 @@ import asyncpg
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import pytest
-from sqlalchemy import insert, text
+from sqlalchemy import insert, text, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 from database_interaction import metadata, get_db
 from main import app
+from schemas import User
 from schemas.site_settings import SiteSettings
 from settings import TEST_DATABASE_URL
 
@@ -113,3 +114,15 @@ async def create_site_settings(async_session_test):
                     }
                 )
             )
+
+
+@pytest.fixture
+async def get_user_from_database(async_session_test):
+    async def get_user_from_database_by_username(username: str):
+        async with async_session_test() as session:
+            result = await session.execute(
+                select(User).where(User.username == username)
+            )
+            return list(result.scalars())
+
+    return get_user_from_database_by_username
