@@ -51,11 +51,17 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
                     parse_mode=ParseMode.HTML,
                 ),
         ) as bot:
-            await bot.send_message(chat_id=telegram_chat_id, text="Пожалуйста, попробуйте еще раз или напишите админу")
+            await bot.send_message(
+                chat_id=telegram_chat_id,
+                text="<pre>Пожалуйста, попробуйте еще раз или напишите админу</pre>"
+            )
         return
     site_settings = await get_site_settings(session)
     async with Bot(
             token=main_bot_token,
+            default=DefaultBotProperties(
+                parse_mode=ParseMode.HTML,
+            ),
     ) as bot:
         if site_settings.say_hi_video:
             media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
