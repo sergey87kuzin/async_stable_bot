@@ -16,8 +16,9 @@ async def handle_telegram_message(
         background_tasks: BackgroundTasks,
         session: AsyncSession = Depends(get_db)
 ):
+    status = HTTPStatus.OK
     if "text" in message:
-        await handle_text_message(message, session, background_tasks)
+        status = await handle_text_message(message, session, background_tasks)
     elif "callback_query" in message:
-        await handle_button_message(message.get("callback_query"), session, background_tasks)
-    return Response(status_code=HTTPStatus.OK)
+        status = await handle_button_message(message.get("callback_query"), session, background_tasks)
+    return Response(status_code=status)
