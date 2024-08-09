@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+from http import HTTPStatus
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
@@ -86,15 +87,19 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
         )
 
 
-async def handle_command(telegram_chat_id: int, username: str, command: str, session: AsyncSession) -> None:
+async def handle_command(telegram_chat_id: int, username: str, command: str, session: AsyncSession) -> int:
     if command == "/instruction":
         await instructions_handler(telegram_chat_id)
+        return HTTPStatus.OK
     elif command == "/lessons":
         await lessons_handler(telegram_chat_id)
+        return HTTPStatus.OK
     elif command == "/style":
         await style_handler(telegram_chat_id, session)
+        return HTTPStatus.OK
     elif command == "/format":
         await format_handler(telegram_chat_id)
+        return HTTPStatus.OK
     elif command in ["/tariff200", "/tariff1000"]:
         await order_handler(
             telegram_chat_id=telegram_chat_id,
@@ -102,58 +107,70 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
             username=username,
             session=session
         )
+        return HTTPStatus.OK
     elif command == "/authorization":
         await authorization_handler(telegram_chat_id=telegram_chat_id)
+        return HTTPStatus.OK
     elif command.startswith("/password"):
+        if command == "/password":
+            await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы забыли указать пароль")
+            return HTTPStatus.NO_CONTENT
         await password_handler(
             telegram_chat_id=telegram_chat_id,
             username=username,
             password=command.replace("/password ", ""),
             session=session
         )
+        return HTTPStatus.OK
     elif command == "/payment":
         await site_payment_handler(telegram_chat_id=telegram_chat_id)
+        return HTTPStatus.OK
     elif command == "/support":
         await support_handler(telegram_chat_id=telegram_chat_id)
+        return HTTPStatus.OK
     elif command == "/information":
         await info_handler(telegram_chat_id=telegram_chat_id)
+        return HTTPStatus.OK
     elif command == "/mybot":
         await my_bot_handler(
             telegram_chat_id=telegram_chat_id,
             username=username,
             session=session
         )
+        return HTTPStatus.OK
     elif command == "/help":
         await help_handler(telegram_chat_id=telegram_chat_id)
+        return HTTPStatus.OK
     else:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
+        return HTTPStatus.NO_CONTENT
 
 
-async def handle_text_message(message: dict, session: AsyncSession, background_tasks: BackgroundTasks):
+async def handle_text_message(message: dict, session: AsyncSession, background_tasks: BackgroundTasks) -> int:
     chat = message.get("chat")
     if not chat:
-        return
+        return HTTPStatus.NO_CONTENT
     telegram_chat_id = chat.get("id")
     if telegram_chat_id in BAN_LIST:
-        return
+        return HTTPStatus.NO_CONTENT
     username = chat.get("username")
     if not username:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="У вашего аккаунта нет username")
-        return
+        return HTTPStatus.NO_CONTENT
     initial_text = message.get("text")
     if not initial_text:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
-        return
+        return HTTPStatus.NO_CONTENT
     if initial_text == "/start":
         await handle_start_message(telegram_chat_id, username, session)
-        return
+        return HTTPStatus.OK
     elif initial_text.startswith("/"):
-        await handle_command(telegram_chat_id, username, initial_text, session)
-        return
+        status = await handle_command(telegram_chat_id, username, initial_text, session)
+        return status
     user = await _get_user_with_style_and_custom_settings(username, session)
     if not user:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Пожалуйста, нажмите кнопку start в боте")
-        return ""
+        return HTTPStatus.NO_CONTENT
     translator = GoogleTranslator(source='auto', target='en')
     answer_text = "Творим волшебство"
     if user.remain_messages > 0:
@@ -167,26 +184,27 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
             telegram_chat_id=telegram_chat_id,
             text="Не осталось генераций"
         )
-        return
+        return HTTPStatus.NO_CONTENT
     if not user_id:
         await bot_send_text_message(
             telegram_chat_id=telegram_chat_id,
             text="Бот косячит( пожалуйста, попробуйте снова"
         )
+        return HTTPStatus.NO_CONTENT
     # if SetVideoVariables.objects.filter(username=chat_username, is_set=False).exists():
     #     set_video_message_variables(chat_username, message_text, chat_id)
     #     return "", "", "", ""
     eng_text = translator.translate(initial_text)
     if not eng_text:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
-        return
+        return HTTPStatus.NO_CONTENT
     wrong_words = check_words(eng_text)
     if wrong_words:
         await bot_send_text_message(
             telegram_chat_id=telegram_chat_id,
             text=f"❌Вы отправили запрещенные слова: {wrong_words}"
         )
-        return
+        return HTTPStatus.NO_CONTENT
     eng_text = eng_text.replace("-- ", "--").replace("blonde girl", "girl, blonde hair")
     if user.preset and user.preset not in initial_text and user.preset not in eng_text:
         initial_text = initial_text + user.preset
@@ -203,13 +221,14 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     }, session)
     await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=answer_text)
     background_tasks.add_task(send_message_to_stable, message, user, session)
+    return HTTPStatus.OK
 
 
-async def handle_button_message(button_data: dict, session: AsyncSession, background_tasks: BackgroundTasks):
+async def handle_button_message(button_data: dict, session: AsyncSession, background_tasks: BackgroundTasks) -> int:
     if button_data:
         chat_id = button_data.get("from", {}).get("id")
         if chat_id in BAN_LIST:
-            return
+            return HTTPStatus.NO_CONTENT
         message_text = button_data.get("data")
         # if StableMessage.objects.filter(
         #         eng_text=message_text,
@@ -247,38 +266,33 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
             inline_keyboard=buttons
         )
         try:
-            await bot_send_text_message_with_markup(
+            await bot_edit_reply_markup(
+                message_id=button_data.get("message").get("message_id"),
                 markup=buttons_markup,
-                telegram_chat_id=chat_id,
-                text="Testing markup change"
+                telegram_chat_id=chat_id
             )
-            # await bot_edit_reply_markup(
-            #     message_id=button_data.get("message").get("message_id"),
-            #     markup=buttons_markup,
-            #     telegram_chat_id=chat_id
-            # )
         except Exception:
             pass
         if not message_text or not chat_username or not chat_id:
             await bot_send_text_message(telegram_chat_id=chat_id, text="С этой кнопкой что-то не так")
-            return
+            return HTTPStatus.NO_CONTENT
         eng_text = message_text
         user = await _get_user_with_style_and_custom_settings(chat_username, session)
         if not user:
             await bot_send_text_message(telegram_chat_id=chat_id, text="Вы не зарегистрированы в приложении")
-            return
+            return HTTPStatus.NO_CONTENT
         if message_text.startswith("button_visualize&&"):
             if user.remain_video_messages <= 0:
                 await bot_send_text_message(
                     telegram_chat_id=chat_id,
                     text="У вас закончились видео генерации"
                 )
-                return
+                return HTTPStatus.NO_CONTENT
             # handle_visualize_button(message_text, user, chat_id)
-            return
+            return HTTPStatus.OK
         else:
             if not await check_remains(eng_text, user, chat_id, session):
-                return
+                return HTTPStatus.NO_CONTENT
         # if message_text.startswith("button_upscale"):
         #     handle_upscale_button(message_text, chat_id)
         #     return
@@ -291,14 +305,14 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
         #     return
         if message_text.startswith("button_vary"):
             await handle_vary_button(message_text, chat_id, session, background_tasks)
-            return
+            return HTTPStatus.OK
         elif message_text.startswith("button_send_again&&"):
             await handle_repeat_button(message_text, chat_id, session, background_tasks)
-            return
+            return HTTPStatus.OK
     else:
         # user = User.objects.first()
         # stable_bot.send_message(
         #     chat_id=user.chat_id,
         #     text="Кто-то опять косячит :)",
         # )
-        return
+        return HTTPStatus.NO_CONTENT
