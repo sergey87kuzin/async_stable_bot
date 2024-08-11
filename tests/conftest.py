@@ -5,7 +5,7 @@ import asyncpg
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import pytest
-from sqlalchemy import insert, text, select
+from sqlalchemy import insert, text, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -96,7 +96,7 @@ async def asyncpg_pool():
 
 @pytest.fixture(scope="session", autouse=True)
 async def create_site_settings(async_session_test):
-    """Clean data in all tables before running test function"""
+    """Creating site settings row"""
     async with async_session_test() as session:
         async with session.begin():
             await session.execute(
@@ -116,6 +116,26 @@ async def create_site_settings(async_session_test):
             )
 
 
+@pytest.fixture(scope="session")
+async def create_user_in_database(async_session_test):
+    """Creating user"""
+
+    async def create_user_in_database_by_username(username: str):
+        async with async_session_test() as session:
+            await session.execute(
+                insert(User).values(
+                    {
+                        "username": username,
+                        "password": "12345",
+                        "remain_messages": 10,
+                        "is_active": True,
+                    }
+                )
+            )
+            await session.commit()
+    return create_user_in_database_by_username
+
+
 @pytest.fixture
 async def get_user_from_database(async_session_test):
     async def get_user_from_database_by_username(username: str):
@@ -126,3 +146,15 @@ async def get_user_from_database(async_session_test):
             return list(result.scalars())
 
     return get_user_from_database_by_username
+
+
+@pytest.fixture
+async def set_generations_to_user(async_session_test):
+    async def set_generations_to_user_by_username(username: str):
+        async with async_session_test() as session:
+            result = await session.execute(
+                update(User).where(User.username == username).values({"remain_messages": 10})
+            )
+            return list(result.scalars())
+
+    return set_generations_to_user_by_username
