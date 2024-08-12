@@ -127,7 +127,6 @@ async def create_user_in_database(async_session_test):
                     {
                         "username": username,
                         "password": "12345",
-                        "remain_messages": 10,
                         "is_active": True,
                     }
                 )
@@ -149,12 +148,12 @@ async def get_user_from_database(async_session_test):
 
 
 @pytest.fixture
-async def set_generations_to_user(async_session_test):
+async def set_user_generations(async_session_test):
     async def set_generations_to_user_by_username(username: str):
         async with async_session_test() as session:
-            result = await session.execute(
+            await session.execute(
                 update(User).where(User.username == username).values({"remain_messages": 10})
             )
-            return list(result.scalars())
+            await session.commit()
 
     return set_generations_to_user_by_username
