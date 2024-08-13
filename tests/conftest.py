@@ -12,7 +12,7 @@ from sqlalchemy.pool import NullPool
 
 from database_interaction import metadata, get_db
 from main import app
-from schemas import User
+from schemas import User, Style
 from schemas.site_settings import SiteSettings
 from settings import TEST_DATABASE_URL
 
@@ -23,6 +23,7 @@ pytest_plugins = ('pytest_asyncio',)
 
 CLEAN_TABLES = [
     "bot_config_sitesettings",
+    "users_style",
     "users_user"
 ]
 
@@ -114,6 +115,24 @@ async def create_site_settings(async_session_test):
                     }
                 )
             )
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def create_style(async_session_test):
+    """Creating style row"""
+    async with async_session_test() as session:
+        async with session.begin():
+            await session.execute(
+                insert(Style).values(
+                    {
+                        "name": "new_style",
+                        "name_for_menu": "new_style",
+                        "positive_prompt": "positive_prompt",
+                        "negative_prompt": "negative_prompt"
+                    }
+                )
+            )
+
 
 
 @pytest.fixture(scope="session")

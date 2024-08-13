@@ -9,6 +9,7 @@ pytest_plugins = ('pytest_asyncio',)
 async def test_start_command(client, get_user_from_database):
     request_json = text_message
     request_json["text"] = "/start"
+    request_json["chat"]["username"] = "SergeyAKuzin"
     response = client.post('/telegram', json=request_json)
 
     assert response.status_code == 200, "Запрос на старт чата дает неправильный статус"

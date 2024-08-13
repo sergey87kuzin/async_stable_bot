@@ -36,8 +36,8 @@ async def format_handler(telegram_chat_id: int) -> None:
     )
     second_line_presets = (
         ("3:1", " --ar 3:1"),
-        ("Удалить", "preset&&del"),
-        ("Инфо", "preset&&info")
+        ("Удалить", "del"),
+        ("Инфо", "info")
     )
     first_line_buttons = []
     second_line_buttons = []
