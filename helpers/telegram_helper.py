@@ -1,6 +1,6 @@
 import random
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from http import HTTPStatus
 
 from aiogram import Bot
@@ -18,6 +18,7 @@ from denied_words import check_words
 from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
 from handlers.site_settings import get_site_settings
+from set_commands import set_style_handler, set_preset_handler
 from handlers.users import _get_user_with_style_and_custom_settings
 from hashing import Hasher
 from helpers.menu_commands import (
@@ -239,12 +240,18 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
         #     await bot_send_text_message(telegram_chat_id=chat_id, text="Вы уже нажимали на эту кнопку)")
         #     return
         chat_username = button_data.get("from", {}).get("username")
-        # if message_text.startswith("preset&&"):
-        #     await set_preset_handler(chat_id, chat_username, message_text)
-        #     return
-        # if message_text.startswith("style&&"):
-        #     await set_style_handler(chat_id, chat_username, message_text)
-        #     return
+        user = await _get_user_with_style_and_custom_settings(chat_username, session)
+        if not user:
+            await bot_send_text_message(telegram_chat_id=chat_id, text="Вы не зарегистрированы в приложении")
+            return HTTPStatus.NO_CONTENT
+        if message_text.startswith("preset&&"):
+            preset_name = message_text.replace("preset&&", "")
+            await set_preset_handler(user, preset_name, session)
+            return HTTPStatus.OK
+        if message_text.startswith("style&&"):
+            style_name = message_text.replace("style&&", "")
+            status = await set_style_handler(user, style_name, session)
+            return status
         # Пр нажатии на кнопку заменяем ее на символ нажатия
         reply_markup = button_data.get("message").get("reply_markup")
         buttons = [[]]
@@ -279,10 +286,6 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
             await bot_send_text_message(telegram_chat_id=chat_id, text="С этой кнопкой что-то не так")
             return HTTPStatus.NO_CONTENT
         eng_text = message_text
-        user = await _get_user_with_style_and_custom_settings(chat_username, session)
-        if not user:
-            await bot_send_text_message(telegram_chat_id=chat_id, text="Вы не зарегистрированы в приложении")
-            return HTTPStatus.NO_CONTENT
         if message_text.startswith("button_visualize&&"):
             if user.remain_video_messages <= 0:
                 await bot_send_text_message(
@@ -311,6 +314,7 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
         elif message_text.startswith("button_send_again&&"):
             await handle_repeat_button(message_text, chat_id, session, background_tasks)
             return HTTPStatus.OK
+        return HTTPStatus.OK
     else:
         # user = User.objects.first()
         # stable_bot.send_message(

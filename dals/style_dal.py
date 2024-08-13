@@ -30,3 +30,13 @@ class StyleDAL:
         style_row = result.fetchone()
         if style_row:
             return style_row[0]
+
+    async def get_style_by_style_name(self, style_name: str) -> Union[Style | None]:
+        query = (
+            select(Style)
+            .filter(Style.name == style_name)
+        )
+        result = await self.db_session.execute(query)
+        style_row = result.fetchone()
+        if style_row:
+            return style_row[0]
