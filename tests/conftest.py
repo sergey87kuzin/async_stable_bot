@@ -7,7 +7,7 @@ from httpx import AsyncClient
 import pytest
 from sqlalchemy import insert, text, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.pool import NullPool
 
 from database_interaction import metadata, get_db
@@ -147,6 +147,7 @@ async def create_user_in_database(async_session_test):
                         "username": username,
                         "password": "12345",
                         "is_active": True,
+                        "chat_id": "1792622682"
                     }
                 )
             )
@@ -159,7 +160,9 @@ async def get_user_from_database(async_session_test):
     async def get_user_from_database_by_username(username: str):
         async with async_session_test() as session:
             result = await session.execute(
-                select(User).where(User.username == username)
+                select(User)
+                .where(User.username == username)
+                .options(joinedload(User.style))
             )
             return list(result.scalars())
 

@@ -10,14 +10,16 @@ from schemas import User
 
 async def set_style_handler(user: User, style_name: str, session: AsyncSession) -> int:
     if style_name == "info":
-        style = await get_style_by_name(style_name, session)
+        style = user.style
         if not style:
+            await bot_send_text_message(user.chat_id, "Стиль не установлен")
             status = HTTPStatus.NO_CONTENT
         else:
             await bot_send_text_message(user.chat_id, f"Ваш стиль {style.name_for_menu}")
             status = HTTPStatus.OK
     elif style_name == "del":
         await _update_user(user.id, {"style_id": None}, session)
+        await bot_send_text_message(user.chat_id, f"Стиль удален")
         status = HTTPStatus.OK
     else:
         style = await get_style_by_name(style_name, session)
@@ -25,6 +27,7 @@ async def set_style_handler(user: User, style_name: str, session: AsyncSession) 
             status = HTTPStatus.NO_CONTENT
         else:
             await _update_user(user.id, {"style_id": style.id}, session)
+            await bot_send_text_message(user.chat_id, f"Ваш стиль {style.name_for_menu}")
             status = HTTPStatus.OK
     return status
 

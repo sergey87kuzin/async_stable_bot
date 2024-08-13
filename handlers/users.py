@@ -11,7 +11,7 @@ __all__ = (
     "_create_new_user",
     "_delete_user",
     "_update_user",
-    "_get_user_by_username",
+    "get_user_by_username",
     "_get_user_with_style_and_custom_settings"
 )
 
@@ -29,7 +29,7 @@ async def _create_new_user(body: UserCreate, session: AsyncSession) -> ShowUser:
     )
 
 
-async def _get_user_by_username(username: str, session: AsyncSession) -> GetUserForMessageHandler | None:
+async def get_user_by_username(username: str, session: AsyncSession) -> GetUserForMessageHandler | None:
     # async with session.begin():
     user_dal = UserDAL(session)
     user = await user_dal.get_user_by_username(username=username)
