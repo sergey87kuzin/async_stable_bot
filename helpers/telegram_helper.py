@@ -15,7 +15,7 @@ import settings
 from ban_list import BAN_LIST
 from bot_methods import bot_send_text_message, bot_edit_reply_markup, bot_send_text_message_with_markup
 from denied_words import check_words
-from handlers import _get_user_by_username, _update_user, _create_message, _create_new_user
+from handlers import get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
 from handlers.site_settings import get_site_settings
 from set_commands import set_style_handler, set_preset_handler
@@ -38,7 +38,7 @@ __all__ = (
 
 async def handle_start_message(telegram_chat_id: int, username: str, session: AsyncSession) -> None:
     try:
-        user = await _get_user_by_username(username, session)
+        user = await get_user_by_username(username, session)
         if not user:
             password = Hasher.get_password_hash(str(random.randint(0, 99999999)).zfill(8))
             user_create_body = UserCreate(

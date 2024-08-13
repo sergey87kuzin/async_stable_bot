@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message, bot_send_two_text_messages, bot_send_text_message_with_markup
 from dals import UserDAL
 from dals.style_dal import StyleDAL
-from handlers import _get_user_by_username, _update_user
+from handlers import get_user_by_username, _update_user
 from hashing import Hasher
 from helpers.menu_texts import PRESET_INFO_TEXT, STYLE_INFO_TEXT, MENU_INFORMATION_TEXT, INFO_TEXT, PASSWORD_TEXT, \
     SUPPORT_TEXT, PAYMENT_TEXT
@@ -92,7 +92,7 @@ async def style_handler(telegram_chat_id: int, session: AsyncSession) -> None:
 
 
 async def order_handler(telegram_chat_id: int, order: str, username: str, session: AsyncSession) -> None:
-    user = await _get_user_by_username(username=username, session=session)
+    user = await get_user_by_username(username=username, session=session)
     if not user:
         await bot_send_text_message(
             telegram_chat_id=telegram_chat_id,
@@ -190,7 +190,7 @@ async def support_handler(telegram_chat_id: int) -> None:
 
 
 async def password_handler(telegram_chat_id: int, username: str, password: str, session: AsyncSession) -> None:
-    user = await _get_user_by_username(username, session)
+    user = await get_user_by_username(username, session)
     hashed_password = Hasher.get_password_hash(password)
     updated_user_id = await _update_user(user.id, {"password": hashed_password}, session)
     if not updated_user_id:
