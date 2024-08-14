@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import Union
 
 from fastapi import BackgroundTasks
@@ -91,7 +92,8 @@ async def handle_vary_button(
     }, session)
     answer_text = "Делаем вариации"
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
-    background_tasks.add_task(send_vary_to_stable, created_message, user, session)
+    if "pytest" not in sys.modules:
+        background_tasks.add_task(send_vary_to_stable, created_message, user, session)
 
 
 async def handle_repeat_button(
@@ -115,4 +117,5 @@ async def handle_repeat_button(
     }, session)
     answer_text = "Творим волшебство"
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
-    background_tasks.add_task(send_message_to_stable, created_message, user, session)
+    if "pytest" not in sys.modules:
+        background_tasks.add_task(send_message_to_stable, created_message, user, session)

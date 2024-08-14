@@ -203,8 +203,8 @@ async def check_remains(
             remain_paid_messages = user.remain_paid_messages - 1
             await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
         elif user.remain_messages > 0:
-            remain_paid_messages = user.remain_paid_messages - 1
-            await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
+            remain_messages = user.remain_messages - 1
+            await _update_user(user.id, {"remain_messages": remain_messages}, session)
         else:
             await bot_send_text_message(
                 telegram_chat_id=chat_id,

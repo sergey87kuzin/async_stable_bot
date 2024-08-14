@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
+
 import asyncio
 from typing import AsyncGenerator, Generator, Any
 
 import asyncpg
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
 import pytest
 from sqlalchemy import insert, text, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -11,8 +12,9 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.pool import NullPool
 
 from database_interaction import metadata, get_db
+from global_constants import StableMessageTypeChoices
 from main import app
-from schemas import User, Style
+from schemas import User, Style, StableMessage
 from schemas.site_settings import SiteSettings
 from settings import TEST_DATABASE_URL
 
@@ -24,7 +26,8 @@ pytest_plugins = ('pytest_asyncio',)
 CLEAN_TABLES = [
     "bot_config_sitesettings",
     "users_style",
-    "users_user"
+    "users_user",
+    "stable_messages_stablemessage",
 ]
 
 
@@ -134,24 +137,21 @@ async def create_style(async_session_test):
             )
 
 
-
 @pytest.fixture(scope="session")
 async def create_user_in_database(async_session_test):
     """Creating user"""
 
     async def create_user_in_database_by_username(username: str):
         async with async_session_test() as session:
-            await session.execute(
-                insert(User).values(
-                    {
-                        "username": username,
-                        "password": "12345",
-                        "is_active": True,
-                        "chat_id": "1792622682"
-                    }
-                )
+            new_user = User(
+                username=username,
+                password="12345",
+                is_active=True,
+                chat_id="1792622682"
             )
+            session.add(new_user)
             await session.commit()
+            return new_user
     return create_user_in_database_by_username
 
 
@@ -179,3 +179,35 @@ async def set_user_generations(async_session_test):
             await session.commit()
 
     return set_generations_to_user_by_username
+
+
+@pytest.fixture(scope="session")
+async def create_message_in_database(async_session_test):
+    """Creating message"""
+
+    async def create_message_in_database(user: User):
+        async with async_session_test() as session:
+            message = StableMessage(
+                initial_text="initial_text",
+                eng_text="eng_text",
+                telegram_chat_id=user.chat_id,
+                stable_request_id="5",
+                single_image="http://picsdesktop.net/summer/1920x1440/PicsDesktop.net_5.jpg",
+                first_image="http://picsdesktop.net/summer/1920x1440/PicsDesktop.net_5.jpg",
+                second_image="https://img3.akspic.ru/attachments/originals/7/8/3/4/44387-lesistaya_mestnost-priroda-zelenyj-list-peyzash-3840x2400.jpg",
+                third_image="https://xphoto.name/uploads/posts/2021-10/1635239112_28-xphoto-name-p-kristina-makarova-porn-41.jpg",
+                fourth_image="https://img3.akspic.ru/attachments/originals/7/8/3/4/44387-lesistaya_mestnost-priroda-zelenyj-list-peyzash-3840x2400.jpg",
+                answer_sent=False,
+                created_at=datetime.now() - timedelta(hours=2),
+                user_id=user.id,
+                message_type=StableMessageTypeChoices.FIRST,
+                height="1024",
+                seed="-1",
+                width="576",
+                sent_to_stable=True
+            )
+            session.add(message)
+            await session.flush()
+            await session.commit()
+            return message
+    return create_message_in_database
