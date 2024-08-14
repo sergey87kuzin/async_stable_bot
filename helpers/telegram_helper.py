@@ -308,7 +308,7 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
         #     direction = message_text.split("&&")[1]
         #     handle_zoom_button(message_text, chat_id, direction)
         #     return
-        if message_text.startswith("button_vary"):
+        if message_text.startswith("button_vary&&"):
             await handle_vary_button(message_text, chat_id, session, background_tasks)
             return HTTPStatus.OK
         elif message_text.startswith("button_send_again&&"):

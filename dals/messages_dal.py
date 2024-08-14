@@ -102,9 +102,13 @@ class StableMessageDAL:
             select(StableMessage)
             .where(and_(
                 StableMessage.answer_sent == False,
-                StableMessage.single_image not in [None, "", "[]"],
                 StableMessage.message_type == StableMessageTypeChoices.FIRST,
                 StableMessage.created_at < datetime.now() - timedelta(hours=1)
+            ))
+            .filter(and_(
+                StableMessage.single_image != None,
+                StableMessage.single_image != "",
+                StableMessage.single_image != "[]",
             ))
         )
         result = await self.db_session.execute(query)
