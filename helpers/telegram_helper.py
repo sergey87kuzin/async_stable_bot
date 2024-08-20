@@ -1,3 +1,4 @@
+import asyncio
 import random
 import sys
 from datetime import datetime
@@ -223,7 +224,9 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     }, session)
     await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=answer_text)
     if "pytest" not in sys.modules:
-        background_tasks.add_task(send_message_to_stable, message, user, session)
+        task = send_message_to_stable(message, user, session)
+        asyncio.create_task(task)
+        # background_tasks.add_task(send_message_to_stable, message, user, session)
     return HTTPStatus.OK
 
 

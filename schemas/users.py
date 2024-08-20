@@ -3,8 +3,7 @@ from typing import Optional
 
 from sqlalchemy import Column, String, BigInteger, ForeignKey
 # from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship, Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from . import Base, str_32, str_128, str_64, str_16
 from .custom_columns import intpk, created_at
