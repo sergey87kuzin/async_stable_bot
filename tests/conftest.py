@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import asyncio
 from typing import AsyncGenerator, Generator, Any
@@ -170,7 +170,7 @@ async def get_user_from_database(async_session_test):
 
 
 @pytest.fixture
-async def set_user_generations(async_session_test):
+async def set_user_free_generations(async_session_test):
     async def set_generations_to_user_by_username(username: str):
         async with async_session_test() as session:
             await session.execute(
@@ -179,6 +179,42 @@ async def set_user_generations(async_session_test):
             await session.commit()
 
     return set_generations_to_user_by_username
+
+
+@pytest.fixture
+async def set_user_generations_wrong_date(async_session_test):
+    async def set_generations_to_user_wrong_date(username: str):
+        async with async_session_test() as session:
+            await session.execute(
+                update(User)
+                .where(User.username == username)
+                .values({
+                    "remain_paid_messages": 10,
+                    "date_of_payment": date.today() - timedelta(days=2),
+                    "date_payment_expired": date.today() - timedelta(days=1)
+                })
+            )
+            await session.commit()
+
+    return set_generations_to_user_wrong_date
+
+
+@pytest.fixture
+async def set_user_generations_right_date(async_session_test):
+    async def set_generations_to_user_right_date(username: str):
+        async with async_session_test() as session:
+            await session.execute(
+                update(User)
+                .where(User.username == username)
+                .values({
+                    "remain_paid_messages": 11,
+                    "date_of_payment": date.today() - timedelta(days=3),
+                    "date_payment_expired": date.today() + timedelta(days=2)
+                })
+            )
+            await session.commit()
+
+    return set_generations_to_user_right_date
 
 
 @pytest.fixture(scope="session")

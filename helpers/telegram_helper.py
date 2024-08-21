@@ -1,7 +1,7 @@
 import asyncio
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from http import HTTPStatus
 
 from aiogram import Bot
@@ -179,7 +179,7 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     if user.remain_messages > 0:
         remain_messages = user.remain_messages - 1
         user_id = await _update_user(user.id, {"remain_messages": remain_messages}, session)
-    elif user.remain_messages > 0 and user.date_payment_expired.replace(tzinfo=None) >= datetime.now():
+    elif user.remain_paid_messages > 0 and user.date_payment_expired.date() >= date.today():
         remain_paid_messages = user.remain_paid_messages - 1
         user_id = await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
     else:
