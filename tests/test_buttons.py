@@ -73,14 +73,14 @@ async def test_set_format(client, create_user_in_database, get_user_from_databas
 async def test_send_again(
         client,
         create_user_in_database,
-        set_user_generations,
+        set_user_free_generations,
         create_message_in_database,
         username,
         button_text,
 ):
 
     user = await create_user_in_database(username)
-    await set_user_generations(username)
+    await set_user_free_generations(username)
     message = await create_message_in_database(user)
 
     request_json = button_message
