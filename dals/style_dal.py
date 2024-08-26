@@ -16,9 +16,8 @@ class StyleDAL:
 
     async def get_all_styles(self) -> list[Style]:
         query = select(Style)
-        async with self.db_session.begin():
-            result = await self.db_session.execute(query)
-            return list(result.scalars().all())
+        result = await self.db_session.execute(query)
+        return list(result.scalars().all())
 
     async def get_user_style(self, user_id: int) -> Union[Style | None]:
         query = (

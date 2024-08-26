@@ -34,7 +34,6 @@ class StableMessageDAL:
         result = await self.db_session.execute(query)
         updated_message_row = result.fetchone()
         if updated_message_row:
-            await self.db_session.commit()
             return updated_message_row[0]
 
     async def get_message_by_id(self, message_id: int) -> Union[StableMessage, None]:

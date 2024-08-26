@@ -37,5 +37,4 @@ class OrderDAL:
         result = await self.db_session.execute(query)
         updated_order_id_row = result.fetchone()
         if updated_order_id_row:
-            await self.db_session.commit()
             return updated_order_id_row[0]
