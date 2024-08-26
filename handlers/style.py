@@ -17,5 +17,6 @@ async def get_user_style(user_id: int, async_session: AsyncSession) -> Union[Sty
 
 
 async def get_style_by_name(style_name: str, async_session: AsyncSession) -> Union[Style | None]:
-    style_dal = StyleDAL(async_session)
-    return await style_dal.get_style_by_style_name(style_name)
+    async with async_session.begin():
+        style_dal = StyleDAL(async_session)
+        return await style_dal.get_style_by_style_name(style_name)
