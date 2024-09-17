@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from random import randint
 from typing import Union
 
@@ -199,7 +199,7 @@ async def check_remains(
                     text="Пожалуйста, оплатите доступ к боту"
                 )
                 return False
-        if user.remain_paid_messages > 0 and user.date_payment_expired.replace(tzinfo=None) >= datetime.now():
+        if user.remain_paid_messages > 0 and user.date_payment_expired.date() >= date.today():
             remain_paid_messages = user.remain_paid_messages - 1
             await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
         elif user.remain_messages > 0:

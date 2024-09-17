@@ -1,7 +1,7 @@
 import asyncio
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from http import HTTPStatus
 
 from aiogram import Bot
