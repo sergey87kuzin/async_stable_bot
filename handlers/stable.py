@@ -1,8 +1,8 @@
+import asyncio
 import json
 import sys
 from typing import Union
 
-from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from async_requests import post
@@ -26,6 +26,9 @@ async def send_message_to_stable(message: StableMessage, user: User, session: As
 
     text_message_url = "https://modelslab.com/api/v6/images/text2img"
     response_data = await post(text_message_url, headers=headers, data=json.dumps(data))
+
+    if response_data.get("empty_answer"):
+        return
 
     remain_messages = user.remain_messages + 1
     if response_data:
@@ -77,7 +80,6 @@ async def handle_vary_button(
         message_text: str,
         chat_id: int,
         session: AsyncSession,
-        background_tasks: BackgroundTasks
 ):
     initial_message_id = int(message_text.split("&&")[-1])
     initial_message = await get_message_by_id(initial_message_id, session)
@@ -93,14 +95,15 @@ async def handle_vary_button(
     answer_text = "Делаем вариации"
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
     if "pytest" not in sys.modules:
-        background_tasks.add_task(send_vary_to_stable, created_message, user, session)
+        task = send_vary_to_stable(created_message, user, session)
+        asyncio.create_task(task)
+        # background_tasks.add_task(send_vary_to_stable, created_message, user, session)
 
 
 async def handle_repeat_button(
         message_text: str,
         chat_id: int,
-        session: AsyncSession,
-        background_tasks: BackgroundTasks
+        session: AsyncSession
 ):
     initial_message_id = int(message_text.split("&&")[-1])
     initial_message = await get_message_by_id(initial_message_id, session)
@@ -118,4 +121,6 @@ async def handle_repeat_button(
     answer_text = "Творим волшебство"
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
     if "pytest" not in sys.modules:
-        background_tasks.add_task(send_message_to_stable, created_message, user, session)
+        task = send_message_to_stable(created_message, user, session)
+        asyncio.create_task(task)
+        # background_tasks.add_task(send_message_to_stable, created_message, user, session)

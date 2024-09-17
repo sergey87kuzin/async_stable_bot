@@ -13,12 +13,11 @@ telegram_router = APIRouter()
 @telegram_router.post('/')
 async def handle_telegram_message(
         message: dict,
-        background_tasks: BackgroundTasks,
         session: AsyncSession = Depends(get_db)
 ):
     status = HTTPStatus.OK
-    if "text" in message:
-        status = await handle_text_message(message, session, background_tasks)
-    elif "callback_query" in message:
-        status = await handle_button_message(message.get("callback_query"), session, background_tasks)
+    if "callback_query" in message:
+        status = await handle_button_message(message.get("callback_query"), session)
+    elif "message" in message:
+        status = await handle_text_message(message.get("message"), session)
     return Response(status_code=status)

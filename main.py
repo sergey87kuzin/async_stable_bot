@@ -2,6 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 import sentry_sdk
 
+import settings
+from aiogram import Bot
 from routers import main_api_router
 
 app = FastAPI(title="AI-stocker-bot")

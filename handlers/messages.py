@@ -20,12 +20,13 @@ from schemas import StableMessage
 
 
 async def _update_message(message_id: int, update_data: dict, session: AsyncSession) -> Union[StableMessage | None]:
-    async with session.begin():
-        message_dal = StableMessageDAL(session)
-        updated_message = await message_dal.update_message(message_id, update_data)
-        if not updated_message:
-            return None
-        return updated_message
+    # async with session.begin():
+    message_dal = StableMessageDAL(session)
+    updated_message = await message_dal.update_message(message_id, update_data)
+    if not updated_message:
+        return None
+    await session.commit()
+    return updated_message
 
 
 async def _create_message(message_data: dict, session: AsyncSession) -> StableMessage:
