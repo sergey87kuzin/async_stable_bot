@@ -149,7 +149,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
         return HTTPStatus.NO_CONTENT
 
 
-async def handle_text_message(message: dict, session: AsyncSession, background_tasks: BackgroundTasks) -> int:
+async def handle_text_message(message: dict, session: AsyncSession) -> int:
     chat = message.get("chat")
     if not chat:
         return HTTPStatus.NO_CONTENT
@@ -179,7 +179,7 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     if user.remain_messages > 0:
         remain_messages = user.remain_messages - 1
         user_id = await _update_user(user.id, {"remain_messages": remain_messages}, session)
-    elif user.remain_paid_messages > 0 and user.date_payment_expired.date() >= date.today():
+    elif user.remain_paid_messages > 0 and user.date_payment_expired.replace(tzinfo=None) >= datetime.now():
         remain_paid_messages = user.remain_paid_messages - 1
         user_id = await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
     else:
@@ -230,7 +230,7 @@ async def handle_text_message(message: dict, session: AsyncSession, background_t
     return HTTPStatus.OK
 
 
-async def handle_button_message(button_data: dict, session: AsyncSession, background_tasks: BackgroundTasks) -> int:
+async def handle_button_message(button_data: dict, session: AsyncSession) -> int:
     if button_data:
         chat_id = button_data.get("from", {}).get("id")
         if chat_id in BAN_LIST:
@@ -312,11 +312,9 @@ async def handle_button_message(button_data: dict, session: AsyncSession, backgr
         #     handle_zoom_button(message_text, chat_id, direction)
         #     return
         if message_text.startswith("button_vary&&"):
-            await handle_vary_button(message_text, chat_id, session, background_tasks)
-            return HTTPStatus.OK
+            await handle_vary_button(message_text, chat_id, session)
         elif message_text.startswith("button_send_again&&"):
-            await handle_repeat_button(message_text, chat_id, session, background_tasks)
-            return HTTPStatus.OK
+            await handle_repeat_button(message_text, chat_id, session)
         return HTTPStatus.OK
     else:
         # user = User.objects.first()

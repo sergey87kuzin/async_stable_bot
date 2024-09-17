@@ -60,7 +60,7 @@ async def get_stable_data(
 
     custom_settings = user.custom_settings
     style = user.style
-    model_id = stable_settings.model_id or "stable-diffusion-3-medium"
+    model_id = stable_settings.model_id or "flux"
     num_inference_steps = stable_settings.num_inference_steps or "31"
     guidance_scale = stable_settings.guidance_scale or 7
     sampling_method = stable_settings.sampling_method or ""
@@ -123,7 +123,7 @@ async def get_stable_data(
         "algorithm_type": algorithm_type,
         "scheduler": scheduler,
         # "embeddings_model": "vae-for-human" or embeddings_models,
-        "webhook": SITE_DOMAIN + "/stable/stable_webhook/",
+        "webhook": SITE_DOMAIN + "/async/stable/stable_webhook/",
         "track_id": message.id,
         "tomesd": "yes",
         "use_karras_sigmas": "yes",
