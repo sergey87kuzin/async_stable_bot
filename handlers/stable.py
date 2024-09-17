@@ -27,9 +27,6 @@ async def send_message_to_stable(message: StableMessage, user: User, session: As
     text_message_url = "https://modelslab.com/api/v6/images/text2img"
     response_data = await post(text_message_url, headers=headers, data=json.dumps(data))
 
-    if response_data.get("empty_answer"):
-        return
-
     remain_messages = user.remain_messages + 1
     if response_data:
         await handle_stable_text2img_answer(response_data, message, remain_messages, session)
