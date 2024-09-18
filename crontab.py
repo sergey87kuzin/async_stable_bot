@@ -29,6 +29,7 @@ async def main():
     hours = set()
     for hour in range(6, 24):
         hours.add(hour)
+    minutes = {0, 10, 20, 30, 40, 50}
     redis_pool = await create_pool(RedisSettings())
     worker = Worker(
         # указываем фоновые задачи
@@ -36,7 +37,7 @@ async def main():
             cron(
                 f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
                 hour=hours,
-                minute=32
+                minute=minutes
             ),
             cron(
                 f"periodic_tasks.stable.{check_no_answer_message.__name__}",
