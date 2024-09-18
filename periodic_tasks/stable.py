@@ -15,7 +15,7 @@ async def check_not_sent_messages(ctx: dict):
     session = ctx.get("db_session")
     not_sent_messages = await get_not_sent_to_stable_messages(session)
     for message in not_sent_messages:
-        await send_message_to_stable(message, message.user, session)
+        await send_message_to_stable(message, message.user, session, True)
 
 
 async def check_no_answer_message(ctx: dict):

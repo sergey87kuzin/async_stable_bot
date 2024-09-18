@@ -54,7 +54,8 @@ async def get_stable_data(
         message: StableMessage,
         user: User,
         stable_settings: StableSettings,
-        session: AsyncSession
+        session: AsyncSession,
+        main_callback_url: bool = False
 ) -> dict:
     eng_text = message.eng_text
 
@@ -99,6 +100,9 @@ async def get_stable_data(
         stable_settings_positive_prompt=stable_settings.positive_prompt if stable_settings else None,
         stable_settings_negative_prompt=stable_settings.negative_prompt if stable_settings else None,
     )
+    callback_url = "/async/stable/stable_webhook/"
+    if main_callback_url:
+        callback_url = "/stable/stable_webhook/"
     data = {
         "key": STABLE_API_KEY,
         "model_id": model_id,
@@ -123,7 +127,7 @@ async def get_stable_data(
         "algorithm_type": algorithm_type,
         "scheduler": scheduler,
         # "embeddings_model": "vae-for-human" or embeddings_models,
-        "webhook": SITE_DOMAIN + "/async/stable/stable_webhook/",
+        "webhook": SITE_DOMAIN + callback_url,
         "track_id": message.id,
         "tomesd": "yes",
         "use_karras_sigmas": "yes",

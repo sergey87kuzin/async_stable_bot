@@ -36,7 +36,7 @@ async def main():
             cron(
                 f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
                 hour=hours,
-                minute=10
+                minute=32
             ),
             cron(
                 f"periodic_tasks.stable.{check_no_answer_message.__name__}",
@@ -78,7 +78,7 @@ class WorkerSettings:
         cron(
             f"periodic_tasks.stable.{check_not_sent_messages.__name__}",
             hour=hours,
-            minute=10
+            minute=20
         )
     ]
     on_startup = startup

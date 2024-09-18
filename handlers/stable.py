@@ -18,11 +18,22 @@ headers = {
 }
 
 
-async def send_message_to_stable(message: StableMessage, user: User, session: AsyncSession):
+async def send_message_to_stable(
+        message: StableMessage,
+        user: User,
+        session: AsyncSession,
+        main_callback_url: bool = False
+):
     """https://docs.modelslab.com/image-generation/community-models/dreamboothtext2img"""
     from helpers import get_stable_data, handle_stable_text2img_answer
     stable_settings = await get_stable_settings(session)
-    data = await get_stable_data(message, user, stable_settings, session)
+    data = await get_stable_data(
+        message,
+        user,
+        stable_settings,
+        session,
+        main_callback_url
+    )
 
     text_message_url = "https://modelslab.com/api/v6/images/text2img"
     response_data = await post(text_message_url, headers=headers, data=json.dumps(data))
