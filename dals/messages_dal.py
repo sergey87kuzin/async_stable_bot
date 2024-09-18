@@ -73,6 +73,7 @@ class StableMessageDAL:
                 .options(joinedload(User.custom_settings))
                 .options(joinedload(User.style))
             )
+            .limit(10)
         )
         result = await self.db_session.execute(query)
         messages = result.fetchall()
