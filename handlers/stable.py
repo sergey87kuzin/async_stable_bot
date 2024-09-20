@@ -44,7 +44,10 @@ async def send_message_to_stable(
     else:
         await _update_user(user_id=user.id, update_data={"remain_messages": remain_messages}, session=session)
         await _update_message(message_id=message.id, update_data={"answer_sent": True}, session=session)
-        await bot_send_text_message(telegram_chat_id=message.telegram_chat_id, text="Ошибка создания сообщения")
+        await bot_send_text_message(
+            telegram_chat_id=message.telegram_chat_id,
+            text=f"<pre>Ошибка создания сообщения. {message.eng_text}. Вам добавлена одна генерация</pre>"
+        )
 
 
 async def fetch_message(message: StableMessage, user: User, session: AsyncSession) -> Union[StableMessage, None]:
@@ -81,7 +84,10 @@ async def send_vary_to_stable(message: StableMessage, user: User, session: Async
         remain_messages = user.remain_messages + 1
         await handle_stable_text2img_answer(response_data, message, remain_messages, session)
     else:
-        await bot_send_text_message(telegram_chat_id=message.telegram_chat_id, text="Ошибка создания вариаций")
+        await bot_send_text_message(
+            telegram_chat_id=message.telegram_chat_id,
+            text=f"<pre>Ошибка создания вариаций. {message.eng_text}. Вам добавлена одна генерация</pre>"
+        )
 
 
 async def handle_vary_button(
@@ -126,8 +132,11 @@ async def handle_repeat_button(
         "user_id": user.id,
         "message_type": StableMessageTypeChoices.FIRST
     }, session)
-    answer_text = "Творим волшебство"
-    await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
+    answer_text = f"Творим волшебство - Повторная генерация {initial_message.initial_text}"
+    await bot_send_text_message(
+        telegram_chat_id=chat_id,
+        text=answer_text
+    )
     if "pytest" not in sys.modules:
         task = send_message_to_stable(created_message, user, session)
         asyncio.create_task(task)
