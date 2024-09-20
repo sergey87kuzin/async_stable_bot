@@ -197,13 +197,14 @@ async def check_remains(
 ):
     if not eng_text.startswith("button_u&&"):
         if user.remain_messages == 0:
-            if not user.date_of_payment or user.date_payment_expired < datetime.now():
+
+            if not user.date_of_payment or user.date_payment_expired.replace(tzinfo=None) < datetime.now():
                 await bot_send_text_message(
                     telegram_chat_id=chat_id,
                     text="Пожалуйста, оплатите доступ к боту"
                 )
                 return False
-        if user.remain_paid_messages > 0 and user.date_payment_expired.date() >= date.today():
+        if user.remain_paid_messages > 0 and user.date_payment_expired.replace(tzinfo=None) >= datetime.now():
             remain_paid_messages = user.remain_paid_messages - 1
             await _update_user(user.id, {"remain_paid_messages": remain_paid_messages}, session)
         elif user.remain_messages > 0:
