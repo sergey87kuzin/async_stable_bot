@@ -222,7 +222,10 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
         "telegram_chat_id": str(telegram_chat_id),
         "user_id": user.id,
     }, session)
-    await bot_send_text_message(telegram_chat_id=telegram_chat_id, text=answer_text)
+    await bot_send_text_message(
+        telegram_chat_id=telegram_chat_id,
+        text=f"{answer_text} - Генерация по запросу: {initial_text}"
+    )
     if "pytest" not in sys.modules:
         task = send_message_to_stable(message, user, session)
         asyncio.create_task(task)

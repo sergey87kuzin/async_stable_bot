@@ -132,8 +132,11 @@ async def handle_repeat_button(
         "user_id": user.id,
         "message_type": StableMessageTypeChoices.FIRST
     }, session)
-    answer_text = "Творим волшебство"
-    await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
+    answer_text = f"Творим волшебство - Повторная генерация {initial_message.initial_text}"
+    await bot_send_text_message(
+        telegram_chat_id=chat_id,
+        text=answer_text
+    )
     if "pytest" not in sys.modules:
         task = send_message_to_stable(created_message, user, session)
         asyncio.create_task(task)
