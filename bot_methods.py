@@ -1,12 +1,16 @@
+import asyncio
+
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardRemove
 
 from settings import main_bot_token
 
 
-async def bot_send_text_message(telegram_chat_id: int, text: str) -> None:
+async def bot_send_text_message(telegram_chat_id: int, text: str, delay: float = 0) -> None:
+    if delay != 0:
+        await asyncio.sleep(delay)
     async with Bot(
             token=main_bot_token,
             default=DefaultBotProperties(
@@ -64,4 +68,13 @@ async def bot_send_image(
             photo=image_url,
             caption=caption,
             reply_markup=markup
+        )
+
+
+async def bot_remove_reply() -> None:
+    async with Bot(token=main_bot_token) as bot:
+        await bot.send_message(
+            chat_id=1792622682,
+            text="no_markup",
+            reply_markup=ReplyKeyboardRemove()
         )
