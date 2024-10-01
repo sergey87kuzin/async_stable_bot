@@ -12,7 +12,8 @@ __all__ = (
     "_delete_user",
     "_update_user",
     "get_user_by_username",
-    "_get_user_with_style_and_custom_settings"
+    "_get_user_with_style_and_custom_settings",
+    "get_all_active_users"
 )
 
 from schemas import User
@@ -73,3 +74,10 @@ async def _get_user_with_style_and_custom_settings(username: str, session: Async
         if not user:
             return None
         return user
+
+
+async def get_all_active_users(session: AsyncSession) -> Union[list[User], None]:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        users = await user_dal.get_all_active_users()
+        return users

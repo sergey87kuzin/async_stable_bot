@@ -35,7 +35,7 @@ class UserDAL:
         if user_row:
             return user_row[0]
 
-    async def get_user_with_style_and_custom_settings(self, username):
+    async def get_user_with_style_and_custom_settings(self, username) -> Union[User, None]:
         query = (
             select(User)
             .where(User.username == username)
@@ -72,3 +72,12 @@ class UserDAL:
         if updated_user_id_row:
             await self.db_session.commit()
             return updated_user_id_row[0]
+
+    async def get_all_active_users(self) -> Union[list[User], None]:
+        query = (
+            select(User)
+            .where(User.is_active == True)
+        )
+        result = await self.db_session.execute(query)
+        user_rows = result.scalars()
+        return list(user_rows)

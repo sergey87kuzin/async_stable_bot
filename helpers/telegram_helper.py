@@ -9,7 +9,6 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile, URLInputFile
 from deep_translator import GoogleTranslator
-from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
@@ -20,7 +19,7 @@ from handlers import get_user_by_username, _update_user, _create_message, _creat
 from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
 from handlers.site_settings import get_site_settings
 from set_commands import set_style_handler, set_preset_handler
-from handlers.users import _get_user_with_style_and_custom_settings
+from handlers.users import _get_user_with_style_and_custom_settings, get_all_active_users
 from hashing import Hasher
 from helpers.menu_commands import (
     instructions_handler, lessons_handler, style_handler, format_handler, order_handler,
@@ -33,15 +32,18 @@ from settings import main_bot_token
 
 __all__ = (
     "handle_text_message",
-    "handle_button_message"
+    "handle_button_message",
+    "send_info_messages_all_users"
 )
 
 
 async def handle_start_message(telegram_chat_id: int, username: str, session: AsyncSession) -> None:
+    init_password = None
     try:
         user = await get_user_by_username(username, session)
         if not user:
-            password = Hasher.get_password_hash(str(random.randint(0, 99999999)).zfill(8))
+            init_password = str(random.randint(0, 99999999)).zfill(8)
+            password = Hasher.get_password_hash(init_password)
             user_create_body = UserCreate(
                 username=username,
                 password=password,
@@ -76,8 +78,8 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
             )
         await bot.send_message(chat_id=telegram_chat_id, text="https://www.youtube.com/watch?v=PupAadTlhNQ")
         button = InlineKeyboardButton(
-            text="Зарегистрироваться",
-            url=f"{settings.SITE_DOMAIN}/auth/registration/{user.id}/"
+            text="Посмотреть уроки",
+            url=f"{settings.SITE_DOMAIN}/courses/course/2"
         )
         register_reply_markup = InlineKeyboardMarkup(
             resize_keyboard=True,
@@ -85,9 +87,15 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
         )
         await bot.send_message(
             chat_id=telegram_chat_id,
-            text="<pre>Привет ✌️ Для продолжения регистрации нажмите на кнопку:</pre>",
+            text="<pre>Привет ✌️ Уроки о продаже работ в интернете доступны по кнопке ниже:</pre>",
             reply_markup=register_reply_markup,
         )
+        if init_password:
+            await bot.send_message(
+                chat_id=telegram_chat_id,
+                text=f"<pre>Ваш логин {username} \nВаш пароль {init_password}</pre>",
+                reply_markup=register_reply_markup,
+            )
 
 
 async def handle_command(telegram_chat_id: int, username: str, command: str, session: AsyncSession) -> int:
@@ -326,3 +334,17 @@ async def handle_button_message(button_data: dict, session: AsyncSession) -> int
         #     text="Кто-то опять косячит :)",
         # )
         return HTTPStatus.NO_CONTENT
+
+
+async def send_info_messages_all_users(session: AsyncSession) -> None:
+    users = await get_all_active_users(session)
+    site_settings = await get_site_settings(session)
+    all_tasks = []
+    for index, user in enumerate(users):
+        task = bot_send_text_message(
+            user.chat_id,
+            text=site_settings.notice_message,
+            delay=1 * index
+        )
+        all_tasks.append(task)
+    await asyncio.gather(*all_tasks)
