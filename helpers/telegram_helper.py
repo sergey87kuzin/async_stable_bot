@@ -18,6 +18,7 @@ from denied_words import check_words
 from handlers import get_user_by_username, _update_user, _create_message, _create_new_user
 from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
 from handlers.site_settings import get_site_settings
+from helpers.many_messages_helper import check_replays
 from set_commands import set_style_handler, set_preset_handler
 from handlers.users import _get_user_with_style_and_custom_settings, get_all_active_users
 from hashing import Hasher
@@ -224,6 +225,28 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
     # if photos:
     #     handle_image_message.delay(eng_text, chat_id, photos, chat_username, user.id)
     #     return "", "", "", ""
+    if user.is_test_user:
+        many_words_eng_text = check_replays(eng_text)
+        if many_words_eng_text:
+            for index, new_prompt in enumerate(many_words_eng_text):
+                message = await _create_message({
+                    "initial_text": new_prompt,
+                    "eng_text": new_prompt,
+                    "telegram_chat_id": str(telegram_chat_id),
+                    "user_id": user.id,
+                }, session)
+                await bot_send_text_message(
+                    telegram_chat_id=telegram_chat_id,
+                    text=f"{answer_text} - Генерация по запросу: {new_prompt}"
+                )
+                task = send_message_to_stable(
+                    message=message,
+                    user=user,
+                    session=session,
+                    pause_time=index
+                )
+                asyncio.create_task(task)
+            return HTTPStatus.OK
     message = await _create_message({
         "initial_text": initial_text,
         "eng_text": eng_text,

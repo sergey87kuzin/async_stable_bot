@@ -22,7 +22,8 @@ async def send_message_to_stable(
         message: StableMessage,
         user: User,
         session: AsyncSession,
-        main_callback_url: bool = False
+        main_callback_url: bool = False,
+        pause_time: int = 0,
 ):
     """https://docs.modelslab.com/image-generation/community-models/dreamboothtext2img"""
     from helpers import get_stable_data, handle_stable_text2img_answer
@@ -34,6 +35,9 @@ async def send_message_to_stable(
         session,
         main_callback_url
     )
+
+    if pause_time > 0:
+        await asyncio.sleep(pause_time)
 
     text_message_url = "https://modelslab.com/api/v6/images/text2img"
     response_data = await post(text_message_url, headers=headers, data=json.dumps(data))
