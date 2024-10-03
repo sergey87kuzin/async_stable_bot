@@ -228,6 +228,7 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
     if user.is_test_user:
         many_words_eng_text = check_replays(eng_text)
         if many_words_eng_text:
+            tasks = []
             for index, new_prompt in enumerate(many_words_eng_text):
                 message = await _create_message({
                     "initial_text": new_prompt,
@@ -243,9 +244,10 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
                     message=message,
                     user=user,
                     session=session,
-                    pause_time=index
+                    pause_time=int(index)
                 )
-                asyncio.create_task(task)
+                tasks.append(task)
+            await asyncio.gather(*tasks)
             return HTTPStatus.OK
     message = await _create_message({
         "initial_text": initial_text,
