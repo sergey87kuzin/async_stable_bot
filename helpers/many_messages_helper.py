@@ -14,7 +14,10 @@ def compile_pair(list1: list, list2: list) -> list:
 
 def compile_lists(lists: list[list]) -> list[list]:
     if len(lists) == 1:
-        return lists
+        result = []
+        for elem in lists[0]:
+            result.append([elem])
+        return result
     while True:
         if len(lists) == 1:
             return lists[0]
