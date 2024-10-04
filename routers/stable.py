@@ -1,3 +1,5 @@
+from cachetools import TTLCache
+
 from http import HTTPStatus
 
 import asyncio
@@ -11,6 +13,7 @@ from handlers import _update_message, get_message_by_stable_request_id, _update_
 from handlers.telegram import send_images_to_telegram
 
 stable_router = APIRouter()
+cache = TTLCache(maxsize=128, ttl=60)
 
 
 @stable_router.post("/stable_webhook/")
@@ -22,6 +25,11 @@ async def stable_image_webhook(
     images = data.get("output")
     message_id = data.get("track_id")
     if images and data.get("status") == "success":
+        item = cache.get(message_id, None)
+        if item is not None:
+            return Response(status_code=HTTPStatus.OK)
+        else:
+            cache[message_id] = True
         # if user.is_test_user and message.message_type == StableMessageTypeChoices.DOUBLE:
         #     message.first_image = images[0]
         #     message.message_type = StableMessageTypeChoices.FIRST
