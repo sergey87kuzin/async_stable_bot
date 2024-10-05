@@ -38,7 +38,12 @@ __all__ = (
 )
 
 
-async def handle_start_message(telegram_chat_id: int, username: str, session: AsyncSession) -> None:
+async def handle_start_message(
+        telegram_chat_id: int,
+        username: str,
+        session: AsyncSession,
+        partner_id: str = None
+) -> None:
     init_password = None
     try:
         user = await get_user_by_username(username, session)
@@ -49,8 +54,9 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
                 username=username,
                 password=password,
                 telegram_chat_id=telegram_chat_id,
+                partner_id=partner_id
             )
-            user = await _create_new_user(user_create_body, session)
+            await _create_new_user(user_create_body, session)
     except Exception as e:
         async with Bot(
                 token=main_bot_token,
@@ -70,13 +76,13 @@ async def handle_start_message(telegram_chat_id: int, username: str, session: As
                 parse_mode=ParseMode.HTML,
             ),
     ) as bot:
-        if site_settings.say_hi_video:
-            media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
-            video = URLInputFile(media_url, filename=site_settings.say_hi_video)
-            await bot.send_video_note(
-                chat_id=telegram_chat_id,
-                video_note=video
-            )
+        # if site_settings.say_hi_video:
+        #     media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
+        #     video = URLInputFile(media_url, filename=site_settings.say_hi_video)
+        #     await bot.send_video_note(
+        #         chat_id=telegram_chat_id,
+        #         video_note=video
+        #     )
         await bot.send_message(chat_id=telegram_chat_id, text="https://www.youtube.com/watch?v=PupAadTlhNQ")
         button = InlineKeyboardButton(
             text="Посмотреть уроки",
@@ -153,6 +159,18 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
     elif command == "/help":
         await help_handler(telegram_chat_id=telegram_chat_id)
         return HTTPStatus.OK
+    elif command == "/referal":
+        async with Bot(
+                token=main_bot_token,
+                default=DefaultBotProperties(
+                    parse_mode=ParseMode.MARKDOWN,
+                ),
+        ) as bot:
+            await bot.send_message(
+                chat_id=telegram_chat_id,
+                text=f"""Для того, чтобы скопировать ссылку, нажмите на нее: \n
+                 `https://t.me/@ToMidjourneyBot?start={telegram_chat_id}`"""
+            )
     else:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
         return HTTPStatus.NO_CONTENT
@@ -173,8 +191,12 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
     if not initial_text:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Вы отправили пустое сообщение")
         return HTTPStatus.NO_CONTENT
-    if initial_text == "/start":
-        await handle_start_message(telegram_chat_id, username, session)
+    if initial_text.startswith("/start"):
+        start_data = initial_text.split(" ")
+        partner_id = None
+        if start_data[0] == "/start" and len(start_data) == 2:
+            partner_id = start_data[1]
+        await handle_start_message(telegram_chat_id, username, session, partner_id)
         return HTTPStatus.OK
     elif initial_text.startswith("/"):
         status = await handle_command(telegram_chat_id, username, initial_text, session)
