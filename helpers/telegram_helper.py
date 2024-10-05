@@ -171,6 +171,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
                 text=f"""Для того, чтобы скопировать ссылку, нажмите на нее: \n
                  `https://t.me/@ToMidjourneyBot?start={telegram_chat_id}`"""
             )
+        return HTTPStatus.OK
     else:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
         return HTTPStatus.NO_CONTENT
