@@ -27,6 +27,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     date_joined: Mapped[created_at]
     chat_id: Mapped[Optional[str_64]]
+    partner_id: Mapped[Optional[str_16]]
     email = Column(String(254), nullable=True)
     date_of_payment: Mapped[Optional[datetime]]
     date_payment_expired: Mapped[Optional[datetime]]

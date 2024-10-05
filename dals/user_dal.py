@@ -22,6 +22,8 @@ class UserDAL:
             username=user_data.username,
             chat_id=str(user_data.telegram_chat_id),
             password=user_data.password,
+            partner_id=user_data.partner_id,
+            remain_messages=10
         )
         self.db_session.add(new_user)
         await self.db_session.flush()

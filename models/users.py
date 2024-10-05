@@ -18,6 +18,7 @@ class UserCreate(BaseModel):
     username: str
     password: str
     telegram_chat_id: int
+    partner_id: str | None = None
 
 
 class ShowUser(TunedModel):
