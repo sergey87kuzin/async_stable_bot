@@ -22,4 +22,4 @@ class SiteSettings(Base):
     month_tariff_count: Mapped[int]
     notice_message: Mapped[Optional[str_512]]
     settings_lesson_link: Mapped[Optional[str_1024]]
-    queue_number: Mapped[Optional[int]]
+    # queue_number: Mapped[Optional[int]]
