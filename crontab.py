@@ -29,7 +29,7 @@ async def main():
     hours = set()
     for hour in range(6, 24):
         hours.add(hour)
-    minutes = {10, 20, 30, 40, 50}
+    minutes = {10, 40}
     redis_pool = await create_pool(RedisSettings())
     worker = Worker(
         # указываем фоновые задачи
