@@ -193,6 +193,6 @@ async def handle_upscale_button(message_text: str, chat_id: int, session: AsyncS
         "sent_to_stable": False
     }, session)
     if "pytest" not in sys.modules:
-        task = send_upscale_to_stable.delay(created_message, user, session)
+        task = send_upscale_to_stable(created_message, user, session)
         asyncio.create_task(task)
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
