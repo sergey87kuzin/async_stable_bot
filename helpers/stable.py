@@ -15,7 +15,8 @@ __all__ = (
     "get_stable_data",
     "handle_stable_text2img_answer",
     "check_remains",
-    "handle_stable_fetch_answer"
+    "handle_stable_fetch_answer",
+    "handle_stable_upscale_answer"
 )
 
 
@@ -152,6 +153,34 @@ async def handle_stable_text2img_answer(
             message_data["fourth_image"] = single_images[3]
         except Exception:
             print("no images")
+    else:
+        await _update_user(message.user_id, {"remain_messages": remain_messages}, session)
+        message_data = {"answer_sent": True}
+        await bot_send_text_message(
+            telegram_chat_id=message.telegram_chat_id,
+            text=f"<pre>Генерация по запросу '{message.initial_text}' не удалась. Попробуйте снова</pre>"
+        )
+    message_data["sent_to_stable"] = True
+    await _update_message(message.id, update_data=message_data, session=session)
+
+
+async def handle_stable_upscale_answer(
+        response_data: dict,
+        message: StableMessage,
+        remain_messages: int,
+        session: AsyncSession
+):
+    status = response_data.get("status")
+    request_id = str(response_data.get("id"))
+    if status == "success":
+        message_data = {
+            "stable_request_id": request_id,
+            "single_image": response_data.get("output")[0],
+        }
+    elif status == "processing":
+        message_data = {
+            "stable_request_id": request_id,
+        }
     else:
         await _update_user(message.user_id, {"remain_messages": remain_messages}, session)
         message_data = {"answer_sent": True}

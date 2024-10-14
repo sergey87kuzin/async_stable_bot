@@ -14,7 +14,7 @@ def generate_image_message_keyboard(message_id: int) -> InlineKeyboardMarkup:
         # ("⬆️", f"button_move&&up&&{message_id}"),
         # ("⬇️", f"button_move&&down&&{message_id}"),
         # ("🔍", f"button_zoom&&{message_id}"),
-        # ("4️⃣x", f"button_upscale&&{message_id}"),
+        ("4️⃣x", f"button_upscale&&{message_id}"),
         # ("🔢", f"button_vary&&{message_id}"),
         # ("🎦", f"button_visualize&&{message_id}"),
         ("🔄", f"button_send_again&&{message_id}"),
@@ -73,5 +73,18 @@ async def send_first_message_to_telegram(message: StableMessage, session: AsyncS
                 text=new_message.initial_text,
                 markup=buttons_u_markup
             )
+    message_data = {"answer_sent": True}
+    await _update_message(message.id, message_data, session)
+
+
+async def send_upscaled_message_to_telegram(message: StableMessage, session: AsyncSession) -> None:
+    await bot_send_text_message(
+        telegram_chat_id=message.telegram_chat_id,
+        text=f"<a href='{message.single_image}'>Скачайте увеличенное фото тут</a>"
+    )
+    await bot_send_text_message(
+        telegram_chat_id=message.telegram_chat_id,
+        text=f"4х: {message.initial_text}"
+    )
     message_data = {"answer_sent": True}
     await _update_message(message.id, message_data, session)

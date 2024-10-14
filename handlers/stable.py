@@ -11,7 +11,7 @@ from global_constants import StableMessageTypeChoices
 from handlers import get_message_by_id, _create_message, get_stable_settings, _get_user_with_style_and_custom_settings, \
     _update_user, _update_message
 from schemas import StableMessage, User
-from settings import STABLE_API_KEY
+from settings import STABLE_API_KEY, SITE_DOMAIN
 
 headers = {
     'Content-Type': 'application/json'
@@ -50,6 +50,35 @@ async def send_message_to_stable(
         await bot_send_text_message(
             telegram_chat_id=message.telegram_chat_id,
             text=f"<pre>Ошибка создания сообщения. {message.eng_text}. Вам добавлена одна генерация</pre>"
+        )
+
+
+async def send_upscale_to_stable(
+        stable_message: StableMessage,
+        user: User,
+        session: AsyncSession
+):
+    from helpers import handle_stable_upscale_answer
+    upscale_image_url = "https://modelslab.com/api/v6/image_editing/super_resolution"
+    data = json.dumps({
+        "key": STABLE_API_KEY,
+        "url": stable_message.first_image,
+        "scale": 4,
+        "webhook": SITE_DOMAIN + "/async/stable/stable_upscale_webhook/",
+        "track_id": stable_message.id,
+        "face_enhance": True,
+        "model_id": "ultra_resolution"
+    })
+    response_data = await post(upscale_image_url, headers=headers, data=json.dumps(data))
+    remain_messages = user.remain_messages + 1
+    if response_data:
+        await handle_stable_upscale_answer(response_data, stable_message, remain_messages, session)
+    else:
+        await _update_user(user_id=user.id, update_data={"remain_messages": remain_messages}, session=session)
+        await _update_message(message_id=stable_message.id, update_data={"answer_sent": True}, session=session)
+        await bot_send_text_message(
+            telegram_chat_id=stable_message.telegram_chat_id,
+            text=f"<pre>Ошибка увеличения. {stable_message.eng_text}. Вам добавлена одна генерация</pre>"
         )
 
 
@@ -144,3 +173,26 @@ async def handle_repeat_button(
         task = send_message_to_stable(created_message, user, session)
         asyncio.create_task(task)
         # background_tasks.add_task(send_message_to_stable, created_message, user, session)
+
+
+async def handle_upscale_button(message_text: str, chat_id: int, session: AsyncSession) -> None:
+    initial_message_id = int(message_text.split("&&")[-1])
+    initial_message = await get_message_by_id(initial_message_id, session)
+    user = initial_message.user
+    answer_text = "Делаем upscale. Это долго. Ждите"
+    if not initial_message:
+        await bot_send_text_message(telegram_chat_id=chat_id, text="Ошибка при увеличении((")
+        return
+    created_message = await _create_message({
+        "initial_text": initial_message.initial_text,
+        "eng_text": message_text,
+        "telegram_chat_id": initial_message.telegram_chat_id,
+        "user_id": initial_message.user_id,
+        "first_image": initial_message.single_image,
+        "message_type": StableMessageTypeChoices.UPSCALED,
+        "sent_to_stable": False
+    }, session)
+    if "pytest" not in sys.modules:
+        task = send_upscale_to_stable.delay(created_message, user, session)
+        asyncio.create_task(task)
+    await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
