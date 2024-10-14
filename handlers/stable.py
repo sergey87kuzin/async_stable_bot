@@ -60,15 +60,15 @@ async def send_upscale_to_stable(
 ):
     from helpers import handle_stable_upscale_answer
     upscale_image_url = "https://modelslab.com/api/v6/image_editing/super_resolution"
-    data = json.dumps({
+    data = {
         "key": STABLE_API_KEY,
-        "url": stable_message.first_image,
+        "init_image": stable_message.first_image,
         "scale": 4,
         "webhook": SITE_DOMAIN + "/async/stable/stable_upscale_webhook/",
         "track_id": stable_message.id,
         "face_enhance": True,
         "model_id": "ultra_resolution"
-    })
+    }
     response_data = await post(upscale_image_url, headers=headers, data=json.dumps(data))
     remain_messages = user.remain_messages + 1
     if response_data:
