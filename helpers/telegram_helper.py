@@ -7,16 +7,16 @@ from http import HTTPStatus
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile, URLInputFile
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from deep_translator import GoogleTranslator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
 from ban_list import BAN_LIST
-from bot_methods import bot_send_text_message, bot_edit_reply_markup, bot_send_text_message_with_markup
+from bot_methods import bot_send_text_message, bot_edit_reply_markup
 from denied_words import check_words
 from handlers import get_user_by_username, _update_user, _create_message, _create_new_user
-from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button
+from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button, handle_upscale_button
 from handlers.site_settings import get_site_settings
 from helpers.many_messages_helper import check_replays
 from set_commands import set_style_handler, set_preset_handler
