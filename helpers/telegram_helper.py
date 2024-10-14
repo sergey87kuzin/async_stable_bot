@@ -357,12 +357,13 @@ async def handle_button_message(button_data: dict, session: AsyncSession) -> int
                 return HTTPStatus.NO_CONTENT
             # handle_visualize_button(message_text, user, chat_id)
             return HTTPStatus.OK
+        elif message_text.startswith("button_upscale"):
+            await handle_upscale_button(message_text, chat_id, session)
+            return HTTPStatus.OK
         else:
             if not await check_remains(eng_text, user, chat_id, session):
                 return HTTPStatus.NO_CONTENT
-        # if message_text.startswith("button_upscale"):
-        #     handle_upscale_button(message_text, chat_id)
-        #     return
+
         # elif message_text.startswith("button_zoom&&"):
         #     handle_zoom_button(message_text, chat_id, "back")
         #     return

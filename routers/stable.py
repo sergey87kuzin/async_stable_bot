@@ -62,3 +62,30 @@ async def stable_image_webhook(
             user_data = {"remain_messages": user.remain_messages + 1}
             await _update_user(user.id, user_data, session)
     return Response(status_code=HTTPStatus.OK)
+
+
+@stable_router.post("/stable_upscale_webhook/")
+async def stable_image_webhook(
+        data: dict,
+        session: AsyncSession = Depends(get_db)
+):
+    images = data.get("output")
+    message_id = int(data.get("track_id"))
+    if images and data.get("status") == "success":
+        message_data = {"single_image": images[0]}
+        await _update_message(message_id=message_id, update_data=message_data, session=session)
+        task = send_images_to_telegram(message_id, session)
+        asyncio.create_task(task)
+    if data.get("status") in ("failed", "error"):
+        message = await get_message_by_stable_request_id(stable_request_id=str(data.get("id")), session=session)
+        if message:
+            user = message.user
+            await bot_send_text_message(
+                telegram_chat_id=message.telegram_chat_id,
+                text=f"Ошибка увеличения {message.initial_text}"
+            )
+            message_data = {"answer_sent": True}
+            await _update_message(message.id, message_data, session)
+            user_data = {"remain_messages": user.remain_messages + 1}
+            await _update_user(user.id, user_data, session)
+    return Response(status_code=HTTPStatus.OK)
