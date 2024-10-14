@@ -348,6 +348,8 @@ async def handle_button_message(button_data: dict, session: AsyncSession) -> int
             await bot_send_text_message(telegram_chat_id=chat_id, text="С этой кнопкой что-то не так")
             return HTTPStatus.NO_CONTENT
         eng_text = message_text
+        if not await check_remains(eng_text, user, chat_id, session):
+            return HTTPStatus.NO_CONTENT
         if message_text.startswith("button_visualize&&"):
             if user.remain_video_messages <= 0:
                 await bot_send_text_message(
@@ -360,10 +362,6 @@ async def handle_button_message(button_data: dict, session: AsyncSession) -> int
         elif message_text.startswith("button_upscale"):
             await handle_upscale_button(message_text, chat_id, session)
             return HTTPStatus.OK
-        else:
-            if not await check_remains(eng_text, user, chat_id, session):
-                return HTTPStatus.NO_CONTENT
-
         # elif message_text.startswith("button_zoom&&"):
         #     handle_zoom_button(message_text, chat_id, "back")
         #     return
