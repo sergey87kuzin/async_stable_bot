@@ -49,6 +49,11 @@ async def stable_image_webhook(
         asyncio.create_task(task)
         # background_tasks.add_task(send_images_to_telegram, message_id, session)
     if data.get("status") in ("failed", "error"):
+        item = cache.get(message_id, None)
+        if item is not None:
+            return Response(status_code=HTTPStatus.OK)
+        else:
+            cache[message_id] = True
         await bot_send_text_message(telegram_chat_id=1792622682, text=str(data))
         message = await get_message_by_stable_request_id(stable_request_id=str(data.get("id")), session=session)
         if message:
@@ -71,12 +76,23 @@ async def stable_image_webhook(
 ):
     images = data.get("output")
     message_id = int(data.get("track_id"))
+
     if images and data.get("status") == "success":
+        item = cache.get(message_id, None)
+        if item is not None:
+            return Response(status_code=HTTPStatus.OK)
+        else:
+            cache[message_id] = True
         message_data = {"single_image": images[0]}
         await _update_message(message_id=message_id, update_data=message_data, session=session)
         task = send_images_to_telegram(message_id, session)
         asyncio.create_task(task)
     if data.get("status") in ("failed", "error"):
+        item = cache.get(message_id, None)
+        if item is not None:
+            return Response(status_code=HTTPStatus.OK)
+        else:
+            cache[message_id] = True
         message = await get_message_by_stable_request_id(stable_request_id=str(data.get("id")), session=session)
         if message:
             user = message.user
