@@ -75,6 +75,7 @@ async def send_first_message_to_telegram(message: StableMessage, session: AsyncS
             )
     message_data = {"answer_sent": True}
     await _update_message(message.id, message_data, session)
+    raise Warning(f"callback handled successfully {message.id}")
 
 
 async def send_upscaled_message_to_telegram(message: StableMessage, session: AsyncSession) -> None:

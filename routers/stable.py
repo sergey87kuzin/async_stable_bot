@@ -47,7 +47,7 @@ async def stable_image_webhook(
         await _update_message(message_id=message_id, update_data=message_data, session=session)
         task = send_images_to_telegram(message_id, session)
         asyncio.create_task(task)
-        # background_tasks.add_task(send_images_to_telegram, message_id, session)
+        raise Warning(f"success webhook {message_id}")
     if data.get("status") in ("failed", "error"):
         item = cache.get(message_id, None)
         if item is not None:
