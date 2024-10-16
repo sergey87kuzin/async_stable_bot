@@ -146,8 +146,7 @@ async def handle_stable_text2img_answer(
     status = response_data.get("status")
     if status == "success":
         message_data = {
-            "stable_request_id": str(response_data.get("id")),
-            "sent_to_stable": True
+            "stable_request_id": str(response_data.get("id"))
         }
         single_images = response_data.get("output")
         message_data["single_image"] = single_images[0]
