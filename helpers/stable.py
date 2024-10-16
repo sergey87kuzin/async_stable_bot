@@ -159,8 +159,6 @@ async def handle_stable_text2img_answer(
         except Exception:
             print("no images")
         await _update_message(message.id, update_data=message_data, session=session)
-        from handlers.telegram import send_images_to_telegram
-        await send_images_to_telegram(message.id, session)
         return
     if status == "processing":
         message_data = {"stable_request_id": str(response_data.get("id"))}
