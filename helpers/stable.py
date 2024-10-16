@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message
 from global_constants import SCALES
 from handlers import _update_message, _update_user
-from handlers.telegram import send_images_to_telegram
 from schemas import StableMessage, User, StableSettings
 from settings import STABLE_API_KEY, SITE_DOMAIN
 
@@ -160,6 +159,7 @@ async def handle_stable_text2img_answer(
         except Exception:
             print("no images")
         await _update_message(message.id, update_data=message_data, session=session)
+        from handlers.telegram import send_images_to_telegram
         await send_images_to_telegram(message.id, session)
         return
     if status == "processing":
