@@ -22,6 +22,7 @@ class OrderDAL:
             total_cost=order_data.total_cost,
             days=order_data.days,
             message_count=order_data.message_count,
+            created_at=order_data.created_at,
         )
         self.db_session.add(new_order)
         await self.db_session.flush()
