@@ -95,9 +95,14 @@ async def fetch_message(message: StableMessage, user: User, session: AsyncSessio
         "request_id": message.stable_request_id
     }
     if message.message_type == StableMessageTypeChoices.FIRST:
-        fetch_url = f"https://modelslab.com/api/v6/images/fetch/{message.stable_request_id}"
+        fetch_url = f"https://modelslab.com/api/v6/images/fetch"
+        data = {
+            "key": STABLE_API_KEY,
+            "request_id": message.stable_request_id
+        }
     elif message.message_type == StableMessageTypeChoices.UPSCALED:
         fetch_url = f"https://modelslab.com/api/v6/image_editing/fetch/{message.stable_request_id}"
+        data = {"key": STABLE_API_KEY}
     else:
         return
     response_data = await post(fetch_url, headers=headers, data=json.dumps(data))

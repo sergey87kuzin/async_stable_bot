@@ -219,7 +219,7 @@ async def handle_stable_fetch_answer(
         images = response_data.get("output")
         if message.message_type == StableMessageTypeChoices.FIRST:
             message_data = {
-                "single_message": images[0],
+                "single_image": images[0],
                 "first_image": images[0],
                 "second_image": images[1],
                 "third_image": images[2],
@@ -227,7 +227,7 @@ async def handle_stable_fetch_answer(
             }
         elif message.message_type == StableMessageTypeChoices.UPSCALED:
             message_data = {
-                "single_message": images[0],
+                "single_image": images[0],
                 "first_image": images[0]
             }
         else:
