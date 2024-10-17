@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import asyncio
 import json
 import sys
@@ -139,7 +141,8 @@ async def handle_vary_button(
         "telegram_chat_id": str(chat_id),
         "user_id": user.id,
         "first_image": initial_message.single_image,
-        "message_type": StableMessageTypeChoices.VARY
+        "message_type": StableMessageTypeChoices.VARY,
+        "created_at": datetime.now()
     }, session)
     answer_text = "Делаем вариации"
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
@@ -170,7 +173,8 @@ async def handle_repeat_button(
         "eng_text": text,
         "telegram_chat_id": str(chat_id),
         "user_id": user.id,
-        "message_type": StableMessageTypeChoices.FIRST
+        "message_type": StableMessageTypeChoices.FIRST,
+        "created_at": datetime.now()
     }, session)
     answer_text = f"Творим волшебство - Повторная генерация {text}"
     await bot_send_text_message(
@@ -198,7 +202,8 @@ async def handle_upscale_button(message_text: str, chat_id: int, session: AsyncS
         "user_id": initial_message.user_id,
         "first_image": initial_message.single_image,
         "message_type": StableMessageTypeChoices.UPSCALED,
-        "sent_to_stable": False
+        "sent_to_stable": False,
+        "created_at": datetime.now()
     }, session)
     if "pytest" not in sys.modules:
         task = send_upscale_to_stable(created_message, user, session)

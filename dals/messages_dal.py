@@ -104,8 +104,7 @@ class StableMessageDAL:
         query = (
             select(StableMessage)
             .where(and_(
-                StableMessage.answer_sent == False,
-                StableMessage.created_at < datetime.now() - timedelta(hours=1)
+                StableMessage.answer_sent == False
             ))
             .filter(or_(
                 StableMessage.message_type == StableMessageTypeChoices.FIRST,

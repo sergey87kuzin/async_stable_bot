@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,7 +54,8 @@ async def send_first_message_to_telegram(message: StableMessage, session: AsyncS
             "message_type": StableMessageTypeChoices.U,
             "width": message.width,
             "height": message.height,
-            "seed": message.seed
+            "seed": message.seed,
+            "created_at": datetime.now(),
         }
         new_message = await _create_message(message_data, session)
         buttons_u_markup = generate_image_message_keyboard(new_message.id)
