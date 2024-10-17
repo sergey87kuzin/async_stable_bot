@@ -30,6 +30,7 @@ async def main():
     for hour in range(6, 24):
         hours.add(hour)
     minutes = {10, 40}
+    telegram_minutes = {2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57}
     redis_pool = await create_pool(RedisSettings())
     worker = Worker(
         # указываем фоновые задачи
@@ -44,11 +45,11 @@ async def main():
             #     hour=hours,
             #     minute=53
             # ),
-            # cron(
-            #     f"periodic_tasks.telegram.{check_not_sent_to_telegram.__name__}",
-            #     hour=hours,
-            #     minute=16
-            # ),
+            cron(
+                f"periodic_tasks.telegram.{check_not_sent_to_telegram.__name__}",
+                hour=hours,
+                minute=telegram_minutes
+            ),
         ],
         on_startup=startup,
         on_shutdown=shutdown,

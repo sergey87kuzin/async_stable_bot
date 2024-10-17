@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 from typing import Union
 
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, update, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -65,8 +65,11 @@ class StableMessageDAL:
                 StableMessage.stable_request_id == None,
                 StableMessage.sent_to_stable == False,
                 StableMessage.answer_sent == False,
-                StableMessage.message_type == StableMessageTypeChoices.FIRST,
                 StableMessage.created_at < datetime.now() - timedelta(hours=1)
+            ))
+            .filter(or_(
+                StableMessage.message_type == StableMessageTypeChoices.FIRST,
+                StableMessage.message_type == StableMessageTypeChoices.UPSCALED
             ))
             .options(
                 joinedload(StableMessage.user)
@@ -102,14 +105,19 @@ class StableMessageDAL:
             select(StableMessage)
             .where(and_(
                 StableMessage.answer_sent == False,
-                StableMessage.message_type == StableMessageTypeChoices.FIRST,
                 StableMessage.created_at < datetime.now() - timedelta(hours=1)
+            ))
+            .filter(or_(
+                StableMessage.message_type == StableMessageTypeChoices.FIRST,
+                StableMessage.message_type == StableMessageTypeChoices.UPSCALED
             ))
             .filter(and_(
                 StableMessage.single_image != None,
                 StableMessage.single_image != "",
                 StableMessage.single_image != "[]",
             ))
+            .options(joinedload(StableMessage.user))
+            .limit(10)
         )
         result = await self.db_session.execute(query)
         messages = result.scalars()
