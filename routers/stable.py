@@ -55,13 +55,12 @@ async def stable_image_webhook(
             return Response(status_code=HTTPStatus.OK)
         else:
             cache[message_id] = True
-        await bot_send_text_message(telegram_chat_id=1792622682, text=str(data))
         message = await get_message_by_stable_request_id(stable_request_id=str(data.get("id")), session=session)
         if message:
             user = message.user
             await bot_send_text_message(
                 telegram_chat_id=message.telegram_chat_id,
-                text=f"Ошибка генерации сообщения {message.initial_text}"
+                text=f"<pre>❌Ошибка генерации/n✅ вам добавлена 1 генерация, отправьте запрос заново {message.initial_text}</pre>"
             )
             message_data = {"answer_sent": True}
             await _update_message(message.id, message_data, session)
