@@ -31,7 +31,7 @@ async def main():
         hours.add(hour)
     minutes = {10, 40}
     telegram_minutes = {20, 50}   # {2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57}
-    fetch_minutes = {5, 45}
+    fetch_minutes = {13, 53}
     redis_pool = await create_pool(RedisSettings())
     worker = Worker(
         # указываем фоновые задачи
