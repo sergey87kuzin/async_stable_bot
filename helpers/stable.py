@@ -5,7 +5,7 @@ from typing import Union
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot_methods import bot_send_text_message
-from global_constants import SCALES
+from global_constants import SCALES, StableMessageTypeChoices
 from handlers import _update_message, _update_user
 from schemas import StableMessage, User, StableSettings
 from settings import STABLE_API_KEY, SITE_DOMAIN
@@ -217,12 +217,21 @@ async def handle_stable_fetch_answer(
     status = response_data.get("status")
     if status == "success":
         images = response_data.get("output")
-        message_data = {
-            "first_image": images[0],
-            "second_image": images[1],
-            "third_image": images[2],
-            "fourth_image": images[3],
-        }
+        if message.message_type == StableMessageTypeChoices.FIRST:
+            message_data = {
+                "single_message": images[0],
+                "first_image": images[0],
+                "second_image": images[1],
+                "third_image": images[2],
+                "fourth_image": images[3],
+            }
+        elif message.message_type == StableMessageTypeChoices.UPSCALED:
+            message_data = {
+                "single_message": images[0],
+                "first_image": images[0]
+            }
+        else:
+            return
         return await _update_message(message.id, update_data=message_data, session=session)
     elif status in ["failed", "error"]:
         await _update_user(message.user_id, {"remain_messages": remain_messages}, session)

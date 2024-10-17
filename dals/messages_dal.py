@@ -91,8 +91,11 @@ class StableMessageDAL:
             .where(and_(
                 StableMessage.answer_sent == False,
                 StableMessage.sent_to_stable == True,
-                StableMessage.message_type == StableMessageTypeChoices.FIRST,
                 StableMessage.created_at < datetime.now() - timedelta(hours=1)
+            ))
+            .filter(or_(
+                StableMessage.message_type == StableMessageTypeChoices.FIRST,
+                StableMessage.message_type == StableMessageTypeChoices.UPSCALED
             ))
             .options(joinedload(StableMessage.user))
         )
