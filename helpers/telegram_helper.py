@@ -77,12 +77,15 @@ async def handle_start_message(
             ),
     ) as bot:
         if site_settings.say_hi_video:
-            media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
-            video = URLInputFile(media_url, filename=site_settings.say_hi_video)
-            await bot.send_video_note(
-                chat_id=telegram_chat_id,
-                video_note=video
-            )
+            try:
+                media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
+                video = URLInputFile(media_url, filename=site_settings.say_hi_video)
+                await bot.send_video_note(
+                    chat_id=telegram_chat_id,
+                    video_note=video
+                )
+            except Exception as e:
+                print(str(e))
         await bot.send_message(chat_id=telegram_chat_id, text="https://www.youtube.com/watch?v=PupAadTlhNQ")
         button = InlineKeyboardButton(
             text="Посмотреть уроки",
