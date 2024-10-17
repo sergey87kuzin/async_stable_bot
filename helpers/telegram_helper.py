@@ -258,6 +258,7 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
                     "eng_text": new_prompt,
                     "telegram_chat_id": str(telegram_chat_id),
                     "user_id": user.id,
+                    "created_at": datetime.now()
                 }, session)
                 await bot_send_text_message(
                     telegram_chat_id=telegram_chat_id,
@@ -277,6 +278,7 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
         "eng_text": eng_text,
         "telegram_chat_id": str(telegram_chat_id),
         "user_id": user.id,
+        "created_at": datetime.now(),
     }, session)
     await bot_send_text_message(
         telegram_chat_id=telegram_chat_id,
