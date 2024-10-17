@@ -35,7 +35,7 @@ async def set_style_handler(user: User, style_name: str, session: AsyncSession) 
 async def set_preset_handler(user: User, preset: str, session: AsyncSession) -> int:
     if preset == "info":
         user_preset = user.preset.replace(" --ar ", "") if user.preset else "Не установлен"
-        await bot_send_text_message(user.chat_id, f"Ваш стиль {user_preset}")
+        await bot_send_text_message(user.chat_id, f"Ваш формат {user_preset}")
         status = HTTPStatus.OK
     elif preset == "del":
         await _update_user(user.id, {"preset": None}, session)

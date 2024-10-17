@@ -202,7 +202,7 @@ async def handle_stable_upscale_answer(
         message_data = {"answer_sent": True}
         await bot_send_text_message(
             telegram_chat_id=message.telegram_chat_id,
-            text=f"<pre>Увеличение картинки '{message.initial_text}' не удалось. Генерация не снята. Попробуйте снова</pre>"
+            text=f"<pre>Увеличение изображения '{message.initial_text}' не удалось. Генерация не снята. Попробуйте снова</pre>"
         )
     message_data["sent_to_stable"] = True
     await _update_message(message.id, update_data=message_data, session=session)
