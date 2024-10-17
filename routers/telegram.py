@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot_methods import bot_remove_reply
 from database_interaction import get_db
+from handlers import get_not_sent_to_stable_messages
 from helpers import handle_text_message, handle_button_message, send_info_messages_all_users
+from periodic_tasks import check_not_sent_to_telegram
 from settings import main_bot_token
 
 telegram_router = APIRouter()
@@ -47,3 +49,8 @@ async def send_text_message():
             ),
     ) as bot:
         await bot.send_message(chat_id=1792622682, text="some text `to copy`")
+
+
+@telegram_router.post('/test_not_sent/')
+async def test_not_sent(session: AsyncSession = Depends(get_db)):
+    await get_not_sent_to_stable_messages(session)

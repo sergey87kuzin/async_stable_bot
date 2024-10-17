@@ -56,7 +56,8 @@ async def send_message_to_stable(
 async def send_upscale_to_stable(
         stable_message: StableMessage,
         user: User,
-        session: AsyncSession
+        session: AsyncSession,
+        pause_time: int = 0,
 ):
     from helpers import handle_stable_upscale_answer
     upscale_image_url = "https://modelslab.com/api/v6/image_editing/super_resolution"
@@ -69,17 +70,19 @@ async def send_upscale_to_stable(
         "face_enhance": True,
         "model_id": "ultra_resolution"
     }
+    if pause_time > 0:
+        await asyncio.sleep(pause_time)
     response_data = await post(upscale_image_url, headers=headers, data=json.dumps(data))
     remain_messages = user.remain_messages + 1
     if response_data:
         await handle_stable_upscale_answer(response_data, stable_message, remain_messages, session)
-    else:
-        await _update_user(user_id=user.id, update_data={"remain_messages": remain_messages}, session=session)
-        await _update_message(message_id=stable_message.id, update_data={"answer_sent": True}, session=session)
-        await bot_send_text_message(
-            telegram_chat_id=stable_message.telegram_chat_id,
-            text=f"<pre>Ошибка увеличения. {stable_message.eng_text}. Вам добавлена одна генерация</pre>"
-        )
+    # else:
+    #     await _update_user(user_id=user.id, update_data={"remain_messages": remain_messages}, session=session)
+    #     await _update_message(message_id=stable_message.id, update_data={"answer_sent": True}, session=session)
+    #     await bot_send_text_message(
+    #         telegram_chat_id=stable_message.telegram_chat_id,
+    #         text=f"<pre>Ошибка увеличения. {stable_message.eng_text}. Вам добавлена одна генерация</pre>"
+    #     )
 
 
 async def fetch_message(message: StableMessage, user: User, session: AsyncSession) -> Union[StableMessage, None]:
