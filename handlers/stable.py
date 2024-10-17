@@ -160,14 +160,19 @@ async def handle_repeat_button(
         initial_message.user.username,
         session
     )
+    text = initial_message.initial_text
+    if user.preset and user.preset not in text:
+        if "--ar" in text:
+            text = text.split("--ar ")[0]
+        text += user.preset
     created_message = await _create_message({
-        "initial_text": initial_message.initial_text,
-        "eng_text": initial_message.initial_text,
+        "initial_text": text,
+        "eng_text": text,
         "telegram_chat_id": str(chat_id),
         "user_id": user.id,
         "message_type": StableMessageTypeChoices.FIRST
     }, session)
-    answer_text = f"Творим волшебство - Повторная генерация {initial_message.initial_text}"
+    answer_text = f"Творим волшебство - Повторная генерация {text}"
     await bot_send_text_message(
         telegram_chat_id=chat_id,
         text=answer_text
