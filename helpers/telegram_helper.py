@@ -7,7 +7,7 @@ from http import HTTPStatus
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, URLInputFile
 from deep_translator import GoogleTranslator
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,13 +76,13 @@ async def handle_start_message(
                 parse_mode=ParseMode.HTML,
             ),
     ) as bot:
-        # if site_settings.say_hi_video:
-        #     media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
-        #     video = URLInputFile(media_url, filename=site_settings.say_hi_video)
-        #     await bot.send_video_note(
-        #         chat_id=telegram_chat_id,
-        #         video_note=video
-        #     )
+        if site_settings.say_hi_video:
+            media_url = f"{settings.SITE_DOMAIN}/media/{site_settings.say_hi_video}"
+            video = URLInputFile(media_url, filename=site_settings.say_hi_video)
+            await bot.send_video_note(
+                chat_id=telegram_chat_id,
+                video_note=video
+            )
         await bot.send_message(chat_id=telegram_chat_id, text="https://www.youtube.com/watch?v=PupAadTlhNQ")
         button = InlineKeyboardButton(
             text="Посмотреть уроки",
