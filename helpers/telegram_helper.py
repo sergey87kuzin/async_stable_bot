@@ -168,8 +168,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
         ) as bot:
             await bot.send_message(
                 chat_id=telegram_chat_id,
-                text=f"""Для того, чтобы скопировать ссылку, нажмите на нее: \n
-                 `https://t.me/@ToMidjourneyBot?start={telegram_chat_id}`"""
+                text=f"Ваша реферальная ссылка: \n`https://t.me/@ToMidjourneyBot?start={telegram_chat_id}` \n Для того, чтобы скопировать ссылку, нажмите на нее"
             )
         return HTTPStatus.OK
     else:
