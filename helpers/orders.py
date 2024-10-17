@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import requests
 
 from handlers import _create_new_order, _update_order_payment_url
@@ -33,7 +35,8 @@ async def create_order_from_menu(tariff, user, session):
         user_id=user.id,
         total_cost=order_data.get("cost"),
         days=order_data.get("days"),
-        message_count=order_data.get("message_count")
+        message_count=order_data.get("message_count"),
+        created_at=datetime.now(),
     )
     order = await _create_new_order(order_data, session)
     order_string = create_prodamus_order_object(order)
