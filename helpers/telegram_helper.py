@@ -159,7 +159,7 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
     elif command == "/help":
         await help_handler(telegram_chat_id=telegram_chat_id)
         return HTTPStatus.OK
-    elif command == "/referal":
+    elif command == "/referral":
         async with Bot(
                 token=main_bot_token,
                 default=DefaultBotProperties(
