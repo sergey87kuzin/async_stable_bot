@@ -236,11 +236,18 @@ async def handle_stable_fetch_answer(
     elif status in ["failed", "error"]:
         await _update_user(message.user_id, {"remain_messages": remain_messages}, session)
         await _update_message(message.id, update_data={"answer_sent": True}, session=session)
-        await bot_send_text_message(
-            telegram_chat_id=message.telegram_chat_id,
-            text=f"Генерация по запросу '{message.initial_text}'"
-                 " не удалась. Вам добавлена одна генерация. Попробуйте снова"
-        )
+        if message.message_type == StableMessageTypeChoices.FIRST:
+            await bot_send_text_message(
+                telegram_chat_id=message.telegram_chat_id,
+                text=f"Генерация по запросу '{message.initial_text}'"
+                     " не удалась. Вам добавлена одна генерация. Попробуйте снова"
+            )
+        elif message.message_type == StableMessageTypeChoices.UPSCALED:
+            await bot_send_text_message(
+                telegram_chat_id=message.telegram_chat_id,
+                text=f"Увеличение изображения '{message.initial_text}'"
+                     " не удалось. Вам добавлена одна генерация. Попробуйте снова"
+            )
 
 
 async def check_remains(

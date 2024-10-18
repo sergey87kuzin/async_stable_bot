@@ -35,4 +35,7 @@ async def check_no_answer_message(ctx: dict):
     for message in no_answer_messages:
         updated_message = await fetch_message(message, message.user, session)
         if updated_message:
-            await send_first_message_to_telegram(updated_message, session)
+            if message.message_type == StableMessageTypeChoices.FIRST:
+                await send_message_to_stable(message, message.user, session)
+            elif message.message_type == StableMessageTypeChoices.UPSCALED:
+                await send_upscale_to_stable(message, message.user, session)
