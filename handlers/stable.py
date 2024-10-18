@@ -184,7 +184,7 @@ async def handle_repeat_button(
         "message_type": StableMessageTypeChoices.FIRST,
         "created_at": datetime.now()
     }, session)
-    answer_text = f"Творим волшебство - Повторная генерация {text}"
+    answer_text = f"Повторная генерация: {text}"
     await bot_send_text_message(
         telegram_chat_id=chat_id,
         text=answer_text

@@ -15,7 +15,7 @@ class StyleDAL:
         self.db_session = db_session
 
     async def get_all_styles(self) -> list[Style]:
-        query = select(Style)
+        query = select(Style).order_by(Style.id)
         result = await self.db_session.execute(query)
         return list(result.scalars().all())
 

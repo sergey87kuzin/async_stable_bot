@@ -5,11 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot_methods import bot_send_text_message
 from handlers import _update_user
 from handlers.style import get_style_by_name
+from helpers.menu_texts import STYLE_INFO_TEXT, PRESET_INFO_TEXT
 from schemas import User
 
 
 async def set_style_handler(user: User, style_name: str, session: AsyncSession) -> int:
     if style_name == "info":
+        await bot_send_text_message(user.chat_id, STYLE_INFO_TEXT)
         style = user.style
         if not style:
             await bot_send_text_message(user.chat_id, "Стиль не установлен")
@@ -27,13 +29,14 @@ async def set_style_handler(user: User, style_name: str, session: AsyncSession) 
             status = HTTPStatus.NO_CONTENT
         else:
             await _update_user(user.id, {"style_id": style.id}, session)
-            await bot_send_text_message(user.chat_id, f"Ваш стиль {style.name_for_menu}")
+            await bot_send_text_message(user.chat_id, f"Установлен стиль {style.name_for_menu}")
             status = HTTPStatus.OK
     return status
 
 
 async def set_preset_handler(user: User, preset: str, session: AsyncSession) -> int:
     if preset == "info":
+        await bot_send_text_message(user.chat_id, PRESET_INFO_TEXT)
         user_preset = user.preset.replace(" --ar ", "") if user.preset else "Не установлен"
         await bot_send_text_message(user.chat_id, f"Ваш формат {user_preset}")
         status = HTTPStatus.OK
@@ -43,6 +46,6 @@ async def set_preset_handler(user: User, preset: str, session: AsyncSession) -> 
         status = HTTPStatus.OK
     else:
         await _update_user(user.id, {"preset": preset}, session)
-        await bot_send_text_message(user.chat_id, f"Формат установлен на {preset.replace(' --ar ', '')}")
+        await bot_send_text_message(user.chat_id, f"Установлен формат {preset.replace(' --ar ', '')}")
         status = HTTPStatus.OK
     return status

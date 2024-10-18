@@ -59,7 +59,7 @@ async def format_handler(telegram_chat_id: int) -> None:
     )
     await bot_send_text_message_with_markup(
         telegram_chat_id=telegram_chat_id,
-        text=PRESET_INFO_TEXT,
+        text="<pre>Какой формат изображения будет?</pre>",
         markup=format_markup
     )
 
@@ -86,7 +86,7 @@ async def style_handler(telegram_chat_id: int, session: AsyncSession) -> None:
     )
     await bot_send_text_message_with_markup(
         telegram_chat_id=telegram_chat_id,
-        text=STYLE_INFO_TEXT,
+        text="<pre>Выберите стиль изображения</pre>",
         markup=style_markup
     )
 
