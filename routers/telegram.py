@@ -11,7 +11,7 @@ from bot_methods import bot_remove_reply
 from database_interaction import get_db
 from handlers import get_not_sent_to_stable_messages
 from helpers import handle_text_message, handle_button_message, send_info_messages_all_users
-from periodic_tasks import check_not_sent_to_telegram
+from periodic_tasks import check_not_sent_to_telegram, check_no_answer_message
 from settings import main_bot_token
 
 telegram_router = APIRouter()
@@ -53,4 +53,4 @@ async def send_text_message():
 
 @telegram_router.post('/test_not_sent/')
 async def test_not_sent(session: AsyncSession = Depends(get_db)):
-    await get_not_sent_to_stable_messages(session)
+    await check_no_answer_message(ctx={"db_session": session})

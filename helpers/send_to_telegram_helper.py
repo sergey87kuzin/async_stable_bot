@@ -16,7 +16,7 @@ def generate_image_message_keyboard(message_id: int) -> InlineKeyboardMarkup:
         # ("⬆️", f"button_move&&up&&{message_id}"),
         # ("⬇️", f"button_move&&down&&{message_id}"),
         # ("🔍", f"button_zoom&&{message_id}"),
-        # ("4️⃣x", f"button_upscale&&{message_id}"),
+        ("4️⃣x", f"button_upscale&&{message_id}"),
         # ("🔢", f"button_vary&&{message_id}"),
         # ("🎦", f"button_visualize&&{message_id}"),
         ("🔄", f"button_send_again&&{message_id}"),

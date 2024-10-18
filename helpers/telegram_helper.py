@@ -19,6 +19,7 @@ from handlers import get_user_by_username, _update_user, _create_message, _creat
 from handlers.stable import send_message_to_stable, handle_vary_button, handle_repeat_button, handle_upscale_button
 from handlers.site_settings import get_site_settings
 from helpers.many_messages_helper import check_replays
+from helpers.menu_texts import REFERRAL_TEXT
 from set_commands import set_style_handler, set_preset_handler
 from handlers.users import _get_user_with_style_and_custom_settings, get_all_active_users
 from hashing import Hasher
@@ -171,8 +172,20 @@ async def handle_command(telegram_chat_id: int, username: str, command: str, ses
         ) as bot:
             await bot.send_message(
                 chat_id=telegram_chat_id,
-                text=f"Ваша реферальная ссылка: \n`https://t.me/@ToMidjourneyBot?start={telegram_chat_id}` \n Для того, чтобы скопировать ссылку, нажмите на нее"
+                text=REFERRAL_TEXT.format(chat_id=telegram_chat_id)
             )
+        return HTTPStatus.OK
+    elif command == "/video":
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="➡️ @aistocker_videobot"
+        )
+        return HTTPStatus.OK
+    elif command == "/blog":
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="➡️ @foto_stocker"
+        )
         return HTTPStatus.OK
     else:
         await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="Бот не обучен этой команде")
@@ -284,7 +297,7 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
     }, session)
     await bot_send_text_message(
         telegram_chat_id=telegram_chat_id,
-        text=f"{answer_text} - Генерация по запросу: {initial_text}"
+        text=f"{answer_text}"
     )
     if "pytest" not in sys.modules:
         task = send_message_to_stable(message, user, session)
