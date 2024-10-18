@@ -10,7 +10,7 @@ __all__ = (
     "check_no_answer_message"
 )
 
-from helpers.send_to_telegram_helper import send_first_message_to_telegram
+from helpers.send_to_telegram_helper import send_first_message_to_telegram, send_upscaled_message_to_telegram
 
 
 async def check_not_sent_messages(ctx: dict):
@@ -36,6 +36,6 @@ async def check_no_answer_message(ctx: dict):
         updated_message = await fetch_message(message, message.user, session)
         if updated_message:
             if message.message_type == StableMessageTypeChoices.FIRST:
-                await send_message_to_stable(message, message.user, session)
+                await send_first_message_to_telegram(message, session)
             elif message.message_type == StableMessageTypeChoices.UPSCALED:
-                await send_upscale_to_stable(message, message.user, session)
+                await send_upscaled_message_to_telegram(message, session)
