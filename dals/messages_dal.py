@@ -91,7 +91,7 @@ class StableMessageDAL:
             .where(and_(
                 StableMessage.answer_sent == False,
                 StableMessage.sent_to_stable == True,
-                StableMessage.created_at < datetime.now() - timedelta(hours=1)
+                StableMessage.created_at < datetime.now() - timedelta(minutes=15)
             ))
             .filter(or_(
                 StableMessage.message_type == StableMessageTypeChoices.FIRST,
