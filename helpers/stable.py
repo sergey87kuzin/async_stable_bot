@@ -174,7 +174,7 @@ async def handle_stable_text2img_answer(
         message_data = {"answer_sent": True}
         await bot_send_text_message(
             telegram_chat_id=message.telegram_chat_id,
-            text=f"<pre>Генерация по запросу '{message.initial_text}' не удалась. Попробуйте снова</pre>"
+            text=f"<pre>Генерация по запросу '{message.initial_text}' не удалась. Вам добавлена 1 генерация. Попробуйте снова</pre>"
         )
     message_data["sent_to_stable"] = True
     await _update_message(message.id, update_data=message_data, session=session)
