@@ -200,7 +200,8 @@ async def handle_upscale_button(message_text: str, chat_id: int, session: AsyncS
     initial_message = await get_message_by_id(initial_message_id, session)
     user = initial_message.user
     from routers.stable import cache
-    if initial_message.id in cache.get("upscale", []):
+    item = cache.get(message_text, None)
+    if item:
         await bot_send_text_message(
             telegram_chat_id=initial_message.telegram_chat_id,
             text=f"<pre>Вы только что отправляли это сообщение в увеличение. Пожалуйста, подождите 1 минуту</pre>"
@@ -225,7 +226,5 @@ async def handle_upscale_button(message_text: str, chat_id: int, session: AsyncS
     if "pytest" not in sys.modules:
         task = send_upscale_to_stable(created_message, user, session)
         asyncio.create_task(task)
-        upscales = cache.get("upscale", [])
-        upscales.append(initial_message_id)
-        cache["upscale"] = upscales
+        cache[message_text] = True
     await bot_send_text_message(telegram_chat_id=chat_id, text=answer_text)
