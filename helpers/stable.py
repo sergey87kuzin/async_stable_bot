@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 from random import randint
 from typing import Union
 
