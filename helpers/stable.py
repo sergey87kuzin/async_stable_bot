@@ -34,6 +34,15 @@ def get_user_prompts(
         stable_settings_positive_prompt: Union[str, None] = None,
         stable_settings_negative_prompt: Union[str, None] = None,
 ):
+    if "--ar" in eng_text:
+        eng_text = (
+            eng_text
+            .replace("--ar 16:9", "")
+            .replace("--ar 9:16", "")
+            .replace("--ar 3:2", "")
+            .replace("--ar 2:3", "")
+            .replace("--ar 3:1", "")
+        )
     if "--no " in eng_text:
         positive, negative = eng_text.split("--no ", 1)
     else:
