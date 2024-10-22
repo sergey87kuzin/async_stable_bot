@@ -201,7 +201,10 @@ async def handle_text_message(message: dict, session: AsyncSession) -> int:
         return HTTPStatus.NO_CONTENT
     username = chat.get("username")
     if not username:
-        await bot_send_text_message(telegram_chat_id=telegram_chat_id, text="У вашего аккаунта нет username")
+        await bot_send_text_message(
+            telegram_chat_id=telegram_chat_id,
+            text="У вашего аккаунта нет username. Его необходимо установить в поле 'Имя пользователя' в настройках профиля telegram"
+        )
         return HTTPStatus.NO_CONTENT
     initial_text = message.get("text")
     if not initial_text:
